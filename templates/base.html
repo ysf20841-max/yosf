@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXUS SMM | متجر الخدمات الرقمية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f19',
+                        cardBg: '#131c2e',
+                        lightBg: '#f8fafc',
+                        lightCard: '#ffffff',
+                        neonCyan: '#06b6d4',
+                        neonPurple: '#a855f7',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body id="page-body" class="bg-darkBg text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+    <!-- شريط التنقل العلوي -->
+    <header class="border-b border-gray-800 dark:border-gray-800 bg-cardBg/90 backdrop-blur-md sticky top-0 z-50 transition-colors" id="nav-header">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <div class="flex items-center gap-3">
+                {% if session.get('user_id') %}
+                <button onclick="toggleSidebar()" class="text-cyan-400 p-1 focus:outline-none">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                {% endif %}
+                <a href="/" class="text-base font-black bg-gradient-to-r from-neonCyan to-neonPurple bg-clip-text text-transparent">
+                    🚀 NEXUS SMM
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-2 space-x-reverse">
+                <!-- زر تبديل الوضع الليلي / النهاري -->
+                <button onclick="toggleTheme()" class="bg-gray-800 dark:bg-gray-800 text-yellow-400 dark:text-cyan-400 text-xs px-2.5 py-1.5 rounded-xl border border-gray-700" id="theme-btn" title="تبديل الوضع">
+                    🌓
+                </button>
+
+                {% if session.get('user_id') and current_user %}
+                    <div class="bg-gray-900 dark:bg-gray-900 border border-cyan-500/30 px-2.5 py-1 rounded-xl text-[11px] flex items-center gap-1">
+                        <span class="text-gray-400">المحفظة:</span>
+                        <span id="nav-balance" class="text-cyan-400 font-bold" 
+                              data-usd="{{ current_user.balance }}" 
+                              data-syp="{{ current_user.balance * usd_to_syp }}">
+                            ${{ "%.2f"|format(current_user.balance) }}
+                        </span>
+                    </div>
+                    
+                    <button onclick="toggleCurrency()" id="currency-btn" class="bg-gray-900 border border-gray-700 text-cyan-400 text-xs px-2.5 py-1 rounded-xl font-bold">
+                        USD ($)
+                    </button>
+
+                    {% if session.get('is_admin') %}
+                        <a href="/admin" class="bg-purple-950 text-purple-300 border border-purple-500/30 text-[10px] px-2 py-1 rounded-xl">أدمن</a>
+                    {% endif %}
+                {% else %}
+                    <a href="/login" class="text-xs text-gray-300 dark:text-gray-300 px-2 py-1">دخول</a>
+                    <a href="/register" class="bg-cyan-500 text-gray-950 font-bold text-xs px-3 py-1.5 rounded-xl">حساب جديد</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    {% if session.get('user_id') %}
+    <div id="sidebar" class="fixed inset-y-0 right-0 w-72 bg-cardBg border-l border-gray-800 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-5 shadow-2xl">
+        <div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-cyan-400 text-sm">قائمة الحساب</h3>
+                <button onclick="toggleSidebar()" class="text-gray-400 text-xl">&times;</button>
+            </div>
+
+            <div class="flex flex-col items-center bg-gray-900/60 p-4 rounded-2xl border border-gray-800 mb-6 shadow-inner">
+                <div class="w-20 h-20 rounded-full p-1 mb-2 bg-gradient-to-r from-cyan-500 to-purple-500 shadow-lg flex items-center justify-center">
+                    {% set avatar_seed = session.get('username') %}
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ avatar_seed }}" class="w-full h-full rounded-full bg-gray-800 object-cover">
+                </div>
+                <h4 class="font-bold text-sm text-white mt-1">{{ session.get('username') }}</h4>
+                <span class="text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2.5 py-0.5 rounded-full mt-1.5 font-bold">
+                    حساب نشط 🚀
+                </span>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-xs text-gray-200">🏠 الرئيسية والأقسام</a>
+                <a href="/my-orders" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-xs text-gray-200">📦 سجل طلباتي</a>
+                <a href="/deposit" class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-800 text-xs text-gray-200">💳 شحن رصيد المحفظة</a>
+                {% if session.get('is_admin') %}
+                <a href="/admin" class="flex items-center gap-3 p-3 rounded-xl bg-purple-950/40 text-purple-300 border border-purple-500/30 text-xs">⚙️ لوحة الأدمن</a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="pt-4 border-t border-gray-800">
+            <a href="/logout" class="block w-full text-center bg-rose-950/40 text-rose-300 border border-rose-500/30 py-2.5 rounded-xl text-xs font-bold">تسجيل الخروج</a>
+        </div>
+    </div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-y-0 left-0 right-0 bg-black/60 z-40 hidden backdrop-blur-sm"></div>
+    {% endif %}
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="mb-4 p-3 rounded-xl text-xs text-center border {% if category == 'success' %}bg-emerald-950/60 border-emerald-500 text-emerald-200{% else %}bg-rose-950/60 border-rose-500 text-rose-200{% endif %}">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-gray-800 bg-cardBg/30 py-4 text-center text-[11px] text-gray-500">
+        جميع الحقوق محفوظة &copy; 2026 - NEXUS SMM
+    </footer>
+
+    <script>
+        const USD_TO_SYP = {{ usd_to_syp }};
+        let currentCurrency = localStorage.getItem('smm_currency') || 'USD';
+        let currentTheme = localStorage.getItem('smm_theme') || 'dark';
+
+        function applyTheme() {
+            const body = document.getElementById('page-body');
+            if (currentTheme === 'light') {
+                body.classList.remove('bg-darkBg', 'text-gray-100');
+                body.classList.add('bg-slate-100', 'text-gray-900');
+            } else {
+                body.classList.remove('bg-slate-100', 'text-gray-900');
+                body.classList.add('bg-darkBg', 'text-gray-100');
+            }
+        }
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('smm_theme', currentTheme);
+            applyTheme();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if(sidebar) {
+                sidebar.classList.toggle('translate-x-full');
+                overlay.classList.toggle('hidden');
+            }
+        }
+
+        function toggleCurrency() {
+            currentCurrency = currentCurrency === 'USD' ? 'SYP' : 'USD';
+            localStorage.setItem('smm_currency', currentCurrency);
+            updateGlobalPrices();
+        }
+
+        function updateGlobalPrices() {
+            const btn = document.getElementById('currency-btn');
+            if(btn) btn.innerText = currentCurrency === 'USD' ? 'USD ($)' : 'SYP (ل.س)';
+
+            const balanceEl = document.getElementById('nav-balance');
+            if(balanceEl) {
+                const usd = parseFloat(balanceEl.getAttribute('data-usd')) || 0;
+                const syp = parseFloat(balanceEl.getAttribute('data-syp')) || 0;
+                if(currentCurrency === 'SYP') {
+                    balanceEl.innerText = syp.toLocaleString() + ' ل.س';
+                } else {
+                    balanceEl.innerText = '$' + usd.toFixed(2);
+                }
+            }
+
+            document.querySelectorAll('.price-tag').forEach(el => {
+                const usd = parseFloat(el.getAttribute('data-usd')) || 0;
+                const syp = parseFloat(el.getAttribute('data-syp')) || (usd * USD_TO_SYP);
+                if(currentCurrency === 'SYP') {
+                    el.innerText = syp.toLocaleString() + ' ل.س';
+                } else {
+                    el.innerText = '$' + usd.toFixed(2);
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            updateGlobalPrices();
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

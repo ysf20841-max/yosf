@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}الرئيسية | NEXUS SMM{% endblock %}
+
+{% block content %}
+<div class="text-center mb-6">
+    <h2 class="text-xl font-black mb-1 text-cyan-400">أقسام الخدمات الرقمية</h2>
+    <p class="text-gray-400 text-xs">اختر أي قسم لعرض خدماته في صفحة مستقلة</p>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mb-8">
+    {% for cat in categories %}
+    <a href="/category/{{ cat.name }}" class="bg-cardBg border border-gray-800 rounded-2xl p-3 active:scale-95 transition shadow hover:border-cyan-500 flex flex-col justify-between">
+        <div class="h-28 rounded-xl overflow-hidden mb-2 bg-gray-900">
+            <img src="{{ cat.image_url if cat.image_url else 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400' }}" class="w-full h-full object-cover">
+        </div>
+        <h3 class="text-xs font-bold text-white text-center truncate">{{ cat.name }}</h3>
+        <span class="text-[10px] text-cyan-400 text-center mt-1 block">تصفح الخدمات &larr;</span>
+    </a>
+    {% else %}
+    <p class="col-span-full text-center text-gray-500 text-xs py-8 bg-cardBg rounded-2xl border border-gray-800">لا توجد أقسام حالياً. اذهب لوحة الأدمن لإضافة أول خدمة!</p>
+    {% endfor %}
+</div>
+{% endblock %}

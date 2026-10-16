@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | NEXUS SMM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-[#131c2e] border border-gray-800 p-8 rounded-3xl max-w-md w-full shadow-2xl">
+        <h2 class="text-2xl font-black text-center text-cyan-400 mb-2">تسجيل الدخول</h2>
+        <p class="text-xs text-center text-gray-400 mb-6">أدخل بياناتك للمتابعة وإتمام الشراء</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="mb-4 p-3 rounded-xl text-xs text-center bg-rose-950/60 border border-rose-500 text-rose-200">
+                  {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/login{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs text-gray-300 mb-1">اسم المستخدم:</label>
+                <input type="text" name="username" required class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400">
+            </div>
+
+            <div>
+                <label class="block text-xs text-gray-300 mb-1">كلمة المرور:</label>
+                <input type="password" name="password" required class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm focus:outline-none focus:border-cyan-400">
+            </div>
+
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-bold py-3 rounded-xl transition">
+                تسجيل الدخول
+            </button>
+        </form>
+
+        <p class="text-center text-xs text-gray-400 mt-6">
+            ليس لديك حساب؟ <a href="/register" class="text-cyan-400 font-bold underline">إنشاء حساب جديد</a>
+        </p>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}{{ category_name }} | NEXUS SMM{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex items-center justify-between">
+    <a href="/" class="text-xs bg-gray-900 border border-gray-800 text-cyan-400 px-3 py-1.5 rounded-xl">&larr; العودة للأقسام</a>
+    <h2 class="text-base font-black text-cyan-400">{{ category_name }}</h2>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    {% for s in services %}
+    <div class="bg-cardBg border border-gray-800 rounded-2xl p-4 flex flex-col justify-between shadow">
+        <div>
+            <!-- صورة الخدمة الداخلية المربعة المناسبة للهواتف -->
+            <div class="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-gray-900 border border-gray-800">
+                <img src="{{ s.service_image_url if s.service_image_url else (s.image_url if s.image_url else 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400') }}" class="w-full h-full object-cover">
+            </div>
+
+            <div class="flex justify-between items-start mb-2">
+                <h4 class="text-xs font-bold text-white">{{ s.name }}</h4>
+                {% if s.is_available %}
+                    <span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full font-bold">متوفرة</span>
+                {% else %}
+                    <span class="bg-rose-600 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">معطلة</span>
+                {% endif %}
+            </div>
+            <p class="text-cyan-400 font-bold text-sm price-tag mb-3" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">
+                ${{ "%.2f"|format(s.price_usd) }}
+            </p>
+        </div>
+        
+        {% if s.is_available %}
+        <button onclick="openOrderForm('{{ s.id }}', '{{ s.name }}', {{ s.price_usd }}, {{ s.price_syp }})" class="w-full bg-cyan-500 text-gray-950 font-bold py-2 rounded-xl text-xs active:scale-95 shadow">
+            اطلب الآن
+        </button>
+        {% else %}
+        <button disabled class="w-full bg-gray-800 text-gray-500 py-2 rounded-xl text-xs">غير متوفرة</button>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- نموذج الطلب السريع -->
+<div id="order-section" class="bg-cardBg border border-gray-800 rounded-2xl p-5 max-w-lg mx-auto hidden shadow-2xl mb-6">
+    <h3 class="text-sm font-bold mb-1 text-center text-cyan-400" id="selected-service-title">إتمام الطلب</h3>
+    <p class="text-center text-[10px] text-gray-400 mb-4">أدخل الرابط أو المعرف والكمية بدقة</p>
+
+    <form action="/order" method="POST" class="space-y-3">
+        <input type="hidden" id="service_id_input" name="service_id">
+
+        <div>
+            <label class="block text-xs text-gray-300 mb-1">الرابط / المعرف:</label>
+            <input type="text" name="target_input" required placeholder="أدخل الرابط هنا..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+        </div>
+
+        <div>
+            <label class="block text-xs text-gray-300 mb-1">الكمية المطلوبة:</label>
+            <input type="number" id="quantity_input" name="quantity" value="1000" min="1" required oninput="calculateTotal()" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+        </div>
+
+        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
+            <span class="text-gray-400">السعر الإجمالي:</span>
+            <span id="total-price" class="text-sm font-bold text-cyan-400">$0.00</span>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg">
+            تأكيد إرسال الطلب
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let activePriceUsd = 0;
+    let activePriceSyp = 0;
+
+    function openOrderForm(id, name, priceUsd, priceSyp) {
+        document.getElementById('service_id_input').value = id;
+        document.getElementById('selected-service-title').innerText = 'طلب: ' + name;
+        activePriceUsd = priceUsd;
+        activePriceSyp = priceSyp;
+        
+        calculateTotal();
+        const sec = document.getElementById('order-section');
+        sec.classList.remove('hidden');
+        sec.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function calculateTotal() {
+        const qty = parseInt(document.getElementById('quantity_input').value) || 0;
+        const totalEl = document.getElementById('total-price');
+        if(!totalEl) return;
+
+        if (currentCurrency === 'SYP') {
+            const total = (activePriceSyp / 1000) * qty;
+            totalEl.innerText = total.toLocaleString() + ' ل.س';
+        } else {
+            const total = (activePriceUsd / 1000) * qty;
+            totalEl.innerText = '$' + total.toFixed(2);
+        }
+    }
+</script>
+{% endblock %}
