@@ -1,103 +1,206 @@
 {% extends "base.html" %}
-{% block title %}لوحة الأدمن | NEXUS SMM{% endblock %}
+{% block title %}لوحة التحكم | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <h2 class="text-xl font-black text-cyan-400 mb-6">⚙️ لوحة التحكم والإدارة</h2>
-
-    <!-- إضافة خدمة جديدة مع رفع صورة من الهاتف -->
-    <div class="bg-cardBg border border-gray-800 rounded-2xl p-5 mb-6 shadow">
-        <h3 class="text-sm font-bold text-cyan-400 mb-4">➕ إضافة خدمة وصورة جديدة</h3>
-        <form action="/admin" method="POST" enctype="multipart/form-data" class="space-y-3">
+<div class="max-w-4xl mx-auto space-y-6">
+    
+    <!-- 1. إضافة خدمة جديدة (مع الأقسام الفرعية وصورها) -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h2 class="text-lg font-black text-cyan-400 mb-4">إضافة خدمة / منتج جديد 🚀</h2>
+        
+        <form method="POST" class="space-y-4">
             <input type="hidden" name="action" value="add_service">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs text-gray-300 mb-1">اسم الخدمة:</label>
-                    <input type="text" name="name" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                    <label class="block text-xs font-bold text-gray-300 mb-1">اسم الخدمة أو اللعبة:</label>
+                    <input type="text" name="name" required placeholder="مثال: شدات ببجي 660" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-300 mb-1">اسم القسم:</label>
-                    <input type="text" name="category" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">السعر (USD):</label>
-                    <input type="number" step="0.01" name="price_usd" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">صورة القسم (من الاستديو):</label>
-                    <input type="file" name="image_file" accept="image/*" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-2 py-1.5 text-[11px] text-gray-400">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">نوع المدخل (link/username):</label>
-                    <input type="text" name="input_type" value="link" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">رابط API المزود:</label>
-                    <input type="text" name="provider_api_url" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">مفتاح API المزود:</label>
-                    <input type="text" name="provider_api_key" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">معرف الخدمة لدى المزود (Service ID):</label>
-                    <input type="text" name="provider_service_id" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                    <label class="block text-xs font-bold text-gray-300 mb-1">القسم الرئيسي:</label>
+                    <div class="flex gap-2">
+                        <select onchange="document.getElementById('cat-input').value=this.value" class="w-1/2 bg-gray-900 border border-gray-700 rounded-xl px-2 py-3 text-xs text-white font-bold">
+                            <option value="">-- اختر رئيسي --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}">{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" id="cat-input" name="category" required placeholder="أو اكتب رئيسي" class="w-1/2 bg-gray-900 border border-gray-700 rounded-xl px-3 py-3 text-xs text-white">
+                    </div>
                 </div>
             </div>
-            <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-bold py-2.5 rounded-xl text-xs shadow mt-2">حفظ الخدمة والصورة</button>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-300 mb-1">القسم الفرعي داخل القسم الرئيسي (اختياري):</label>
+                <input type="text" name="sub_category" placeholder="مثال: شحن مباشر / عروض" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+            </div>
+
+            <!-- روابط الصور (الرئيسي، الفرعي، والخدمة) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رابط صورة القسم الرئيسي:</label>
+                    <input type="text" name="category_image_url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رابط صورة القسم الفرعي:</label>
+                    <input type="text" name="sub_category_image_url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رابط أيقونة الخدمة:</label>
+                    <input type="text" name="service_image_url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">نوع التنفيذ:</label>
+                    <select name="service_type" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white font-bold">
+                        <option value="game">يدوي (شحن العاب / ايدي - بدون كمية)</option>
+                        <option value="api">تلقائي API (رشق - لكل 1000)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">السعر ($):</label>
+                    <input type="number" step="0.01" name="price_usd" required placeholder="السعر" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">الحد الأدنى والأقصى (للـ API):</label>
+                    <div class="flex gap-2">
+                        <input type="number" name="min_quantity" value="100" placeholder="الأدنى" class="w-1/2 bg-gray-900 border border-gray-700 rounded-xl px-2 py-3 text-xs text-white">
+                        <input type="number" name="max_quantity" value="10000" placeholder="الأقصى" class="w-1/2 bg-gray-900 border border-gray-700 rounded-xl px-2 py-3 text-xs text-white">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-900/50 p-4 rounded-2xl border border-gray-800">
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رابط API المزود:</label>
+                    <input type="text" name="provider_api_url" placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">مفتاح API المزود:</label>
+                    <input type="text" name="provider_api_key" placeholder="Key..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-300 mb-1">رقم الخدمة لديهم (ID):</label>
+                    <input type="text" name="provider_service_id" placeholder="123" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3.5 rounded-xl text-xs shadow-lg transition-transform active:scale-95">حفظ وإضافة الخدمة للموقع ✨</button>
         </form>
     </div>
 
-    <!-- إدارة الخدمات الحالية -->
-    <div class="bg-cardBg border border-gray-800 rounded-2xl p-5 mb-6 shadow">
-        <h3 class="text-sm font-bold text-cyan-400 mb-4">📋 إدارة الخدمات الحالية</h3>
-        <div class="space-y-3">
-            {% for service in services %}
-            <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
-                <div>
-                    <h4 class="font-bold text-white">{{ service.name }}</h4>
-                    <p class="text-gray-400 text-[10px]">القسم: {{ service.category }} | USD: ${{ service.price_usd }}</p>
+    <!-- 2. إضافة طرق الدفع وصور الباركود -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h2 class="text-lg font-black text-emerald-400 mb-4">إضافة طريقة دفع / باركود تحويل للزبائن 📷</h2>
+        
+        <form method="POST" class="space-y-4 mb-6">
+            <input type="hidden" name="action" value="add_payment_method">
+            <div>
+                <label class="block text-xs font-bold text-gray-300 mb-1">اسم طريقة الدفع:</label>
+                <input type="text" name="title" required placeholder="مثال: سيريتل كاش / هرم" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-300 mb-1">رابط صورة الباركود (QR Code Image URL):</label>
+                <input type="text" name="qr_image_url" required placeholder="https://..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-300 mb-1">تعليمات التحويل (رقم الحساب / الاسم):</label>
+                <textarea name="instructions" required placeholder="رقم الحساب..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white h-20"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black py-3 rounded-xl text-xs shadow-lg">حفظ وإضافة الباركود للموقع 🚀</button>
+        </form>
+
+        <div class="space-y-2">
+            {% for pm in payment_methods %}
+            <div class="flex items-center justify-between bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs text-white">
+                <div class="flex items-center gap-3">
+                    <img src="{{ pm.qr_image_url }}" class="w-10 h-10 object-contain bg-white rounded-lg p-0.5">
+                    <div>
+                        <strong>{{ pm.title }}</strong>
+                        <div class="text-[10px] text-gray-400">{{ pm.instructions[:40] }}</div>
+                    </div>
                 </div>
-                <form action="/admin" method="POST">
-                    <input type="hidden" name="action" value="toggle_status">
-                    <input type="hidden" name="service_id" value="{{ service.id }}">
-                    <input type="hidden" name="current_status" value="{{ service.is_available }}">
-                    <button type="submit" class="px-3 py-1.5 rounded-lg text-[10px] font-bold {% if service.is_available %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/40{% else %}bg-rose-500/20 text-rose-400 border border-rose-500/40{% endif %}">
-                        {{ 'متوفرة' if service.is_available else 'معطلة' }}
-                    </button>
+                <form method="POST">
+                    <input type="hidden" name="action" value="delete_payment_method">
+                    <input type="hidden" name="payment_method_id" value="{{ pm.id }}">
+                    <button type="submit" class="text-rose-500 font-bold">حذف ❌</button>
                 </form>
             </div>
-            {% else %}
-            <p class="text-center text-gray-500 text-xs py-4">لا توجد خدمات مضافة حتى الآن.</p>
             {% endfor %}
         </div>
     </div>
 
-    <!-- طلبات شحن الرصيد المعلقة -->
-    <div class="bg-cardBg border border-gray-800 rounded-2xl p-5 shadow">
-        <h3 class="text-sm font-bold text-cyan-400 mb-4">💳 طلبات شحن الرصيد المعلقة</h3>
-        <div class="space-y-3">
-            {% for dep in deposits %}
-            <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs flex justify-between items-center">
-                <div>
-                    <p class="font-bold text-white">المستخدم: {{ dep.username }}</p>
-                    <p class="text-gray-400 text-[10px]">المبلغ: ${{ dep.requested_amount }} | العملية: {{ dep.tx_id }} | الحالة: {{ dep.status }}</p>
-                </div>
-                {% if dep.status == 'pending' %}
-                <form action="/admin" method="POST" class="flex gap-1">
-                    <input type="hidden" name="action" value="approve_deposit">
-                    <input type="hidden" name="deposit_id" value="{{ dep.id }}">
-                    <input type="hidden" name="approved_amount" value="{{ dep.requested_amount }}">
-                    <button type="submit" class="bg-emerald-500 text-gray-950 font-bold px-3 py-1.5 rounded-lg text-[10px]">قبول</button>
-                </form>
-                {% else %}
-                <span class="text-emerald-400 text-[10px] font-bold">مؤكد ✅</span>
-                {% endif %}
+    <!-- 3. إضافة حساب جاهز للمتجر -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h2 class="text-lg font-black text-pink-400 mb-4">إضافة حساب جاهز للمتجر 🔥</h2>
+        <form method="POST" class="space-y-4">
+            <input type="hidden" name="action" value="add_account_item">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="text" name="title" required placeholder="عنوان الحساب..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+                <input type="number" step="0.01" name="price_usd" required placeholder="السعر بالدولار ($)" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
             </div>
-            {% else %}
-            <p class="text-center text-gray-500 text-xs py-4">لا توجد طلبات شحن معلقة.</p>
+            <input type="text" name="image_url" placeholder="رابط صورة الحساب..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+            <textarea name="description" placeholder="وصف الحساب..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white"></textarea>
+            <textarea name="secret_details" required placeholder="بيانات الدخول السرية التي تظهر للزبون عند الشراء فقط..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-cyan-300 font-mono h-24"></textarea>
+            <button type="submit" class="w-full bg-pink-500 hover:bg-pink-400 text-white font-black py-3 rounded-xl text-xs shadow-lg">إضافة الحساب للمتجر 🛒</button>
+        </form>
+    </div>
+
+    <!-- 4. نشر الإشعارات العامة -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h3 class="text-base font-black text-rose-500 mb-3">نشر إشعار أو تنبيه عام للزبائن 📢</h3>
+        <form method="POST" class="space-y-3 mb-6">
+            <input type="hidden" name="action" value="add_notification">
+            <input type="text" name="title" required placeholder="عنوان الإشعار..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white">
+            <textarea name="message" required placeholder="نص التنبيه..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white"></textarea>
+            <button type="submit" class="w-full bg-rose-600 text-white font-black py-3 rounded-xl text-xs">نشر الإشعار فوراً 🚀</button>
+        </form>
+        <div class="space-y-2">
+            {% for n in notifications %}
+            <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs text-white">
+                <div><strong>{{ n.title }}:</strong> {{ n.message }}</div>
+                <form method="POST">
+                    <input type="hidden" name="action" value="delete_notification">
+                    <input type="hidden" name="notification_id" value="{{ n.id }}">
+                    <button type="submit" class="text-rose-500 font-bold">حذف ❌</button>
+                </form>
+            </div>
             {% endfor %}
         </div>
     </div>
+
+    <!-- 5. مراجعة وقبول طلبات الشحن -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h3 class="text-base font-black text-gray-900 dark:text-white mb-4">طلبات شحن المحفظة المعلقة 💳</h3>
+        <div class="space-y-3">
+            {% for d in deposits %}
+            <div class="flex items-center justify-between bg-gray-900 border border-gray-800 p-3.5 rounded-2xl">
+                <div>
+                    <h4 class="text-xs font-black text-white">المستخدم: <span class="text-cyan-400">{{ d.username }}</span></h4>
+                    <span class="text-[11px] text-gray-400 font-semibold">المبلغ: ${{ "%.2f"|format(d.amount_usd) }} - الحالة: {{ d.status }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    {% if d.receipt_image_url %}
+                    <a href="{{ d.receipt_image_url }}" target="_blank" class="text-xs bg-gray-800 text-gray-200 px-3 py-1.5 rounded-xl font-bold">الإيصال</a>
+                    {% endif %}
+                    {% if d.status == 'pending' %}
+                    <form method="POST">
+                        <input type="hidden" name="action" value="approve_deposit">
+                        <input type="hidden" name="deposit_id" value="{{ d.id }}">
+                        <button type="submit" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-3 py-1.5 rounded-xl">قبول الشحن</button>
+                    </form>
+                    {% else %}
+                    <span class="text-xs text-emerald-400 font-bold">تم الشحن</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <p class="text-xs text-gray-500 text-center py-2">لا توجد طلبات شحن معلقة.</p>
+            {% endfor %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

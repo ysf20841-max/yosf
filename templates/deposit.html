@@ -1,52 +1,52 @@
 {% extends "base.html" %}
-{% block title %}شحن الرصيد | NEXUS SMM{% endblock %}
+{% block title %}شحن المحفظة | أوج ميديا{% endblock %}
+
 {% block content %}
-<div class="max-w-md mx-auto">
-    <h2 class="text-lg font-black text-cyan-400 mb-4 text-center">💳 شحن رصيد المحفظة</h2>
-
-    <!-- صورة إرشادية لطرق الدفع والشحن -->
-    <div class="bg-cardBg border border-gray-800 p-3 rounded-2xl mb-4 shadow text-center">
-        <div class="h-36 rounded-xl overflow-hidden mb-2 bg-gray-900 border border-gray-800">
-            <img src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=600" class="w-full h-full object-cover opacity-90">
+<div class="max-w-md mx-auto space-y-6">
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+            <h2 class="text-lg font-black text-cyan-400">شحن رصيد المحفظة</h2>
         </div>
-        <p class="text-[11px] text-gray-300">قم بتحويل المبلغ عبر وسائل الدفع المعتمدة، ثم أدخل رقم عملية التحويل بدقة أدناه ليتم شحن محفظتك.</p>
-    </div>
+        <p class="text-xs text-gray-400 text-center mb-6 font-semibold">أدخل المبلغ المطلوب وأرفق رابط صورة إيصال التحويل</p>
 
-    <!-- نموذج الشحن -->
-    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl mb-5 shadow">
-        <form action="/deposit" method="POST" class="space-y-3">
+        <form method="POST" class="space-y-4">
             <div>
-                <label class="block text-xs text-gray-300 mb-1">المبلغ المراد شحنه ($):</label>
-                <input type="number" step="0.01" name="amount" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                <label class="block text-xs font-bold text-gray-300 mb-1.5">المبلغ المطلوب بالدولار ($):</label>
+                <input type="number" step="0.01" name="amount_usd" required placeholder="10.00" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:outline-none font-semibold">
             </div>
+
             <div>
-                <label class="block text-xs text-gray-300 mb-1">رقم أو مرجع عملية التحويل (Transaction ID):</label>
-                <input type="text" name="tx_id" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white" placeholder="أدخل رقم العملية...">
+                <label class="block text-xs font-bold text-gray-300 mb-1.5">رابط صورة إيصال التحويل:</label>
+                <input type="text" name="receipt_image_url" required placeholder="https://... (ضع رابط صورة الإيصال)" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:outline-none font-semibold">
             </div>
-            <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-bold py-2.5 rounded-xl text-xs shadow">إرسال طلب الشحن</button>
+
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3.5 rounded-2xl text-xs shadow-xl active:scale-95 transition-transform mt-2">
+                إرسال طلب الشحن للأدمن 💳
+            </button>
         </form>
     </div>
 
-    <!-- سجل الطلبات -->
-    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl shadow">
-        <h3 class="text-xs font-bold text-cyan-400 mb-3">📋 سجل طلبات الشحن السابقة</h3>
-        <div class="space-y-2">
-            {% for dep in deposits %}
-            <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs flex justify-between items-center">
+    <!-- سجل طلبات الشحن -->
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl">
+        <h3 class="text-sm font-black text-gray-900 dark:text-white mb-4">سجل عمليات الشحن</h3>
+        <div class="space-y-3">
+            {% for d in deposits %}
+            <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-900/80 border border-gray-200 dark:border-gray-800 p-3.5 rounded-2xl">
                 <div>
-                    <p class="font-bold text-white">المبلغ: ${{ dep.requested_amount }}</p>
-                    <p class="text-gray-400 text-[10px]">المرجع: {{ dep.tx_id }}</p>
-                </div>
-                <div>
-                    {% if dep.status == 'pending' %}
-                        <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2 py-0.5 rounded-full font-bold">قيد المراجعة</span>
+                    <h4 class="text-xs font-black text-cyan-400 mb-1">المبلغ: ${{ "%.2f"|format(d.amount_usd) }}</h4>
+                    {% if d.status == 'approved' %}
+                    <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2.5 py-0.5 rounded-full font-black">تمت الموافقة والشحن</span>
                     {% else %}
-                        <span class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold">مؤكد ✅</span>
+                    <span class="bg-amber-500/20 text-amber-400 text-[10px] px-2.5 py-0.5 rounded-full font-black">قيد المراجعة</span>
                     {% endif %}
                 </div>
+                {% if d.receipt_image_url %}
+                <a href="{{ d.receipt_image_url }}" target="_blank" class="text-xs bg-gray-200 dark:bg-gray-800 text-gray-200 px-3 py-1.5 rounded-xl font-bold">عرض الإيصال</a>
+                {% endif %}
             </div>
             {% else %}
-            <p class="text-center text-gray-500 text-xs py-3">لا توجد طلبات شحن سابقة.</p>
+            <p class="text-xs text-gray-500 text-center py-3">لا توجد طلبات شحن سابقة.</p>
             {% endfor %}
         </div>
     </div>

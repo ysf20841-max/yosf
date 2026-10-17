@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}متجر الحسابات | أوج ميديا{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h2 class="text-xl font-black text-cyan-400 mb-1">متجر الحسابات والاشتراكات الجاهزة 🔥</h2>
+    <p class="text-xs text-gray-400 font-semibold">اشترِ الحساب واستلم بيانات الدخول فوراً وبشكل تلقائي</p>
+</div>
+
+<!-- الحسابات المتاحة للبيع -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+    {% for acc in accounts %}
+    <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-4 shadow-xl flex flex-col justify-between">
+        <div>
+            <div class="w-full h-44 rounded-2xl overflow-hidden mb-3.5 bg-gray-950 border border-gray-800">
+                <img src="{{ acc.image_url if acc.image_url else 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500' }}" class="w-full h-full object-cover">
+            </div>
+            <h3 class="text-base font-black text-gray-900 dark:text-white mb-1">{{ acc.title }}</h3>
+            <p class="text-xs text-gray-400 mb-3 font-semibold">{{ acc.description }}</p>
+            <div class="text-lg font-black text-cyan-400 price-tag mb-4" data-usd="{{ acc.price_usd }}" data-syp="{{ acc.price_usd * 150 }}">
+                ${{ "%.2f"|format(acc.price_usd) }}
+            </div>
+        </div>
+
+        <form action="/buy_account/{{ acc.id }}" method="POST">
+            <button type="submit" onclick="return confirm('هل تريد شراء هذا الحساب وخصم المبلغ من محفظتك؟')" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3 rounded-2xl text-xs shadow-lg active:scale-95 transition-transform">
+                شراء الحساب فوراً 🛒
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="col-span-full bg-cardLight dark:bg-cardDark border border-gray-800 p-8 text-center rounded-3xl text-xs text-gray-400 font-bold">
+        لا توجد حسابات متاحة للبيع حالياً، ترقبوا التحديث القادم!
+    </div>
+    {% endfor %}
+</div>
+
+<!-- الحسابات المشتراة سابقاً ورؤية الكلمة واليوزر -->
+{% if my_purchased %}
+<div class="bg-cardLight dark:bg-cardDark border border-cyan-500/30 rounded-3xl p-6 shadow-2xl">
+    <h3 class="text-sm font-black text-cyan-400 mb-4">حساباتي المشتراة وبيانات السرية 🔑</h3>
+    <div class="space-y-4">
+        {% for p in my_purchased %}
+        <div class="bg-gray-900 border border-gray-800 p-4 rounded-2xl">
+            <h4 class="text-xs font-black text-white mb-1">{{ p.title }}</h4>
+            <div class="bg-black/80 border border-cyan-500/40 p-3 rounded-xl text-xs font-mono text-cyan-300 whitespace-pre-wrap select-all">
+{{ p.secret_details }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

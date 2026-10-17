@@ -1,103 +1,113 @@
 {% extends "base.html" %}
-{% block title %}{{ category_name }} | NEXUS SMM{% endblock %}
+{% block title %}{{ category_name }} | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="mb-4 flex items-center justify-between">
-    <a href="/" class="text-xs bg-gray-900 border border-gray-800 text-cyan-400 px-3 py-1.5 rounded-xl">&larr; العودة للأقسام</a>
-    <h2 class="text-base font-black text-cyan-400">{{ category_name }}</h2>
+<div class="mb-5 flex items-center justify-between">
+    <a href="/" class="text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-cyan-500 px-3.5 py-2 rounded-xl font-black shadow-sm">&larr; الأقسام</a>
+    <h2 class="text-sm font-black text-gray-900 dark:text-white">{{ category_name }}</h2>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+<!-- تصميم الشبكة المماثل للصورة 3 أعمدة بالجوال -->
+<div class="grid grid-cols-3 gap-3 mb-8">
     {% for s in services %}
-    <div class="bg-cardBg border border-gray-800 rounded-2xl p-4 flex flex-col justify-between shadow">
-        <div>
-            <!-- صورة الخدمة الداخلية المربعة المناسبة للهواتف -->
-            <div class="w-full aspect-square rounded-xl overflow-hidden mb-3 bg-gray-900 border border-gray-800">
-                <img src="{{ s.service_image_url if s.service_image_url else (s.image_url if s.image_url else 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400') }}" class="w-full h-full object-cover">
-            </div>
-
-            <div class="flex justify-between items-start mb-2">
-                <h4 class="text-xs font-bold text-white">{{ s.name }}</h4>
-                {% if s.is_available %}
-                    <span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full font-bold">متوفرة</span>
-                {% else %}
-                    <span class="bg-rose-600 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">معطلة</span>
-                {% endif %}
-            </div>
-            <p class="text-cyan-400 font-bold text-sm price-tag mb-3" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">
-                ${{ "%.2f"|format(s.price_usd) }}
-            </p>
-        </div>
+    <div onclick="openOrderModal('{{ s.id }}', '{{ s.name }}', {{ s.price_usd }}, {{ s.price_syp }}, '{{ s.service_type }}', '{{ s.input_label }}', {{ s.min_quantity }}, {{ s.max_quantity }})" 
+         class="bg-white dark:bg-cardDark border border-gray-100 dark:border-gray-800 rounded-3xl p-3 flex flex-col items-center justify-between shadow-sm hover:shadow-md cursor-pointer transition-all active:scale-95">
         
-        {% if s.is_available %}
-        <button onclick="openOrderForm('{{ s.id }}', '{{ s.name }}', {{ s.price_usd }}, {{ s.price_syp }})" class="w-full bg-cyan-500 text-gray-950 font-bold py-2 rounded-xl text-xs active:scale-95 shadow">
-            اطلب الآن
-        </button>
-        {% else %}
-        <button disabled class="w-full bg-gray-800 text-gray-500 py-2 rounded-xl text-xs">غير متوفرة</button>
-        {% endif %}
+        <!-- الصورة الدائرية المحاطة بإطار أنيق -->
+        <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-gradient-to-tr from-cyan-500 via-purple-500 to-pink-500 shadow-sm mb-2">
+            <div class="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-950 border-2 border-white dark:border-gray-900">
+                <img src="{{ s.service_image_url if s.service_image_url else 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400' }}" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <h4 class="text-[11px] font-black text-gray-900 dark:text-white text-center line-clamp-2 leading-tight mb-1">{{ s.name }}</h4>
+        <p class="text-[10px] font-black text-rose-500 price-tag" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">
+            ${{ "%.2f"|format(s.price_usd) }}
+        </p>
     </div>
     {% endfor %}
 </div>
 
-<!-- نموذج الطلب السريع -->
-<div id="order-section" class="bg-cardBg border border-gray-800 rounded-2xl p-5 max-w-lg mx-auto hidden shadow-2xl mb-6">
-    <h3 class="text-sm font-bold mb-1 text-center text-cyan-400" id="selected-service-title">إتمام الطلب</h3>
-    <p class="text-center text-[10px] text-gray-400 mb-4">أدخل الرابط أو المعرف والكمية بدقة</p>
+<!-- النافذة المنبثقة الذكية لتنفيذ الطلب -->
+<div id="order-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+        <button onclick="closeOrderModal()" class="absolute top-4 left-4 text-gray-400 text-xl font-black w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800">&times;</button>
 
-    <form action="/order" method="POST" class="space-y-3">
-        <input type="hidden" id="service_id_input" name="service_id">
+        <h3 class="text-sm font-black text-cyan-500 mb-4 text-center" id="modal-service-title">طلب خدمة</h3>
 
-        <div>
-            <label class="block text-xs text-gray-300 mb-1">الرابط / المعرف:</label>
-            <input type="text" name="target_input" required placeholder="أدخل الرابط هنا..." class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-        </div>
+        <form action="/order" method="POST" class="space-y-4">
+            <input type="hidden" id="modal-service-id" name="service_id">
 
-        <div>
-            <label class="block text-xs text-gray-300 mb-1">الكمية المطلوبة:</label>
-            <input type="number" id="quantity_input" name="quantity" value="1000" min="1" required oninput="calculateTotal()" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
-        </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5" id="modal-input-label">معرّف الحساب (ID):</label>
+                <input type="text" name="target_input" required placeholder="أدخل البيانات هنا..." class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-3 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:outline-none font-semibold">
+            </div>
 
-        <div class="flex justify-between items-center bg-gray-900 p-3 rounded-xl border border-gray-800 text-xs">
-            <span class="text-gray-400">السعر الإجمالي:</span>
-            <span id="total-price" class="text-sm font-bold text-cyan-400">$0.00</span>
-        </div>
+            <!-- الحقل يظهر فقط لخدمات الـ API / الرشق -->
+            <div id="quantity-container" class="hidden">
+                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">الكمية المطلوبة:</label>
+                <input type="number" id="modal-quantity" name="quantity" value="1" oninput="calculateModalTotal()" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3.5 py-3 text-xs text-gray-900 dark:text-white focus:border-cyan-500 focus:outline-none font-semibold">
+            </div>
 
-        <button type="submit" class="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-lg">
-            تأكيد إرسال الطلب
-        </button>
-    </form>
+            <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-900 p-3 rounded-2xl border border-gray-200 dark:border-gray-800">
+                <span class="text-xs font-bold text-gray-500 dark:text-gray-400">السعر الإجمالي:</span>
+                <span id="modal-total-price" class="text-sm font-black text-cyan-500">$0.00</span>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-red-600 to-rose-500 text-white font-black py-3 rounded-2xl text-xs shadow-xl active:scale-95 transition-transform">
+                تأكيد والخصم من المحفظة ✨
+            </button>
+        </form>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    let activePriceUsd = 0;
-    let activePriceSyp = 0;
+    let modalUsd = 0;
+    let modalSyp = 0;
+    let currentServiceType = 'game';
 
-    function openOrderForm(id, name, priceUsd, priceSyp) {
-        document.getElementById('service_id_input').value = id;
-        document.getElementById('selected-service-title').innerText = 'طلب: ' + name;
-        activePriceUsd = priceUsd;
-        activePriceSyp = priceSyp;
+    function openOrderModal(id, name, priceUsd, priceSyp, sType, inputLabel, minQ, maxQ) {
+        document.getElementById('modal-service-id').value = id;
+        document.getElementById('modal-service-title').innerText = name;
+        document.getElementById('modal-input-label').innerText = inputLabel || 'معرّف الحساب (ID):';
         
-        calculateTotal();
-        const sec = document.getElementById('order-section');
-        sec.classList.remove('hidden');
-        sec.scrollIntoView({ behavior: 'smooth' });
+        currentServiceType = sType;
+        const qContainer = document.getElementById('quantity-container');
+        const qInput = document.getElementById('modal-quantity');
+
+        if (sType === 'api') {
+            qContainer.classList.remove('hidden');
+            qInput.value = minQ || 1000;
+            qInput.min = minQ || 100;
+            qInput.max = maxQ || 100000;
+        } else {
+            qContainer.classList.add('hidden');
+            qInput.value = 1;
+        }
+
+        modalUsd = priceUsd;
+        modalSyp = priceSyp;
+        calculateModalTotal();
+        document.getElementById('order-modal').classList.remove('hidden');
     }
 
-    function calculateTotal() {
-        const qty = parseInt(document.getElementById('quantity_input').value) || 0;
-        const totalEl = document.getElementById('total-price');
-        if(!totalEl) return;
+    function closeOrderModal() {
+        document.getElementById('order-modal').classList.add('hidden');
+    }
+
+    function calculateModalTotal() {
+        const qty = parseInt(document.getElementById('modal-quantity').value) || 1;
+        const totalEl = document.getElementById('modal-total-price');
+
+        let totalUsd = currentServiceType === 'api' ? (modalUsd / 1000) * qty : modalUsd * qty;
+        let totalSyp = currentServiceType === 'api' ? (modalSyp / 1000) * qty : modalSyp * qty;
 
         if (currentCurrency === 'SYP') {
-            const total = (activePriceSyp / 1000) * qty;
-            totalEl.innerText = total.toLocaleString() + ' ل.س';
+            totalEl.innerText = totalSyp.toLocaleString('ar-EG') + ' ل.س';
         } else {
-            const total = (activePriceUsd / 1000) * qty;
-            totalEl.innerText = '$' + total.toFixed(2);
+            totalEl.innerText = '$' + totalUsd.toFixed(2);
         }
     }
 </script>
