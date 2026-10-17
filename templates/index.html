@@ -1,44 +1,28 @@
 {% extends "base.html" %}
-{% block title %}الرئيسية | أوج ميديا OWJ MEDIA{% endblock %}
+{% block title %}الرئيسية والأقسام | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex justify-between items-end">
-    <div>
-        <h2 class="text-xl font-black text-cyan-400 mb-1">أقسام الخدمات الرقمية</h2>
-        <p class="text-xs text-gray-400 font-semibold">اختر القسم واطلب خدماتك بسرعة واحترافية</p>
+<div class="space-y-6">
+    <div class="bg-gradient-to-r from-cyan-900/40 via-blue-900/40 to-purple-900/40 border border-cyan-500/30 rounded-3xl p-6 text-center shadow-xl">
+        <h1 class="text-lg sm:text-xl font-black text-white mb-2">مرحباً بك في منصة أوج ميديا ⚡</h1>
+        <p class="text-xs text-gray-300">أسرع وأضمن خدمات السوشيال ميديا وشحن الألعاب في مكان واحد وبشكل تلقائي ويدوي احترافي.</p>
     </div>
-    <a href="/accounts" class="bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black text-xs px-3.5 py-2 rounded-xl shadow-lg active:scale-95 transition-transform">
-        متجر الحسابات 🔥
-    </a>
-</div>
 
-{% if categories %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% for cat_name, data in categories.items() %}
-    <a href="/category/{{ cat_name }}" class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 hover:border-cyan-500/50 rounded-2xl p-4 flex items-center justify-between shadow-xl transition-all group">
-        <div class="flex items-center gap-3.5">
-            <div class="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 flex-shrink-0">
-                <img src="{{ data.image_url if data.image_url else 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400' }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
-            </div>
+    <h2 class="text-sm font-black text-cyan-400">الأقسام المتاحة:</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {% for cat_name, info in categories.items() %}
+        <a href="/category/{{ cat_name }}" class="bg-cardDark border border-gray-800 hover:border-cyan-500/60 rounded-2xl p-4 shadow-xl flex items-center gap-4 transition-all group">
+            <img src="{{ info.image_url or 'https://via.placeholder.com/100' }}" class="w-14 h-14 object-cover rounded-xl bg-gray-900 border border-gray-700 p-1 flex-shrink-0 group-hover:scale-105 transition-transform">
             <div>
-                <h3 class="text-base font-black text-gray-900 dark:text-white group-hover:text-cyan-400 transition-colors mb-0.5">{{ cat_name }}</h3>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold">{{ data.count }} خدمات متاحة</p>
+                <h3 class="text-sm font-black text-white group-hover:text-cyan-400 transition-colors">{{ cat_name }}</h3>
+                <span class="text-[11px] text-gray-400 font-bold">{{ info.count }} خدمة متاحة</span>
             </div>
+        </a>
+        {% else %}
+        <div class="col-span-full text-center py-10 bg-cardDark border border-gray-800 rounded-3xl">
+            <p class="text-xs text-gray-400">لا توجد أقسم مضافة حالياً من قبل الإدارة.</p>
         </div>
-        <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-cyan-400 font-black">
-            &larr;
-        </div>
-    </a>
-    {% endfor %}
+        {% endfor %}
+    </div>
 </div>
-{% else %}
-<div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center mt-6 shadow-xl">
-    <p class="text-xs font-bold text-gray-400 mb-3">لا توجد أقسام أو خدمات مضافة حتى الآن!</p>
-    {% if is_admin %}
-    <a href="/admin" class="inline-block bg-cyan-500 text-gray-950 font-black px-5 py-2.5 rounded-xl text-xs shadow mt-2">
-        إضافة خدمات من لوحة الأدمن ⚙️
-    </a>
-    {% endif %}
-</div>
-{% endif %}
 {% endblock %}

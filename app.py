@@ -8,13 +8,13 @@ app = Flask(__name__)
 app.secret_key = 'owj_media_ultra_secret_key_2026'
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=365)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nexus_smm.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'nexus_smm.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 USD_TO_SYP = 150.0
 
-# 1. جدول الخدمات والمنتجات (مع الأقسام الفرعية وصورها)
 class Service(db.Model):
     __tablename__ = 'services'
     id = db.Column(db.Integer, primary_key=True)
@@ -26,25 +26,22 @@ class Service(db.Model):
     service_image_url = db.Column(db.String(500), nullable=True)
     price_usd = db.Column(db.Float, nullable=False, default=0.0)
     price_syp = db.Column(db.Float, nullable=False, default=0.0)
-    service_type = db.Column(db.String(20), default='game') # game, manual, api
+    service_type = db.Column(db.String(20), default='game') # 'game' يدوي أو 'api' تلقائي
     input_label = db.Column(db.String(100), default='معرّف الحساب (ID)')
     min_quantity = db.Column(db.Integer, default=1)
-    max_quantity = db.Column(db.Integer, default=1)
+    max_quantity = db.Column(db.Integer, default=10000)
     provider_api_url = db.Column(db.String(300), nullable=True)
     provider_api_key = db.Column(db.String(300), nullable=True)
     provider_service_id = db.Column(db.String(50), nullable=True)
     is_available = db.Column(db.Boolean, default=True)
 
-# 2. جدول الإشعارات العامة
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.String(50), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
 
-# 3. جدول بيع الحسابات الجاهزة
 class AccountItem(db.Model):
     __tablename__ = 'account_items'
     id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +53,6 @@ class AccountItem(db.Model):
     is_sold = db.Column(db.Boolean, default=False)
     buyer_username = db.Column(db.String(100), nullable=True)
 
-# 4. جدول طرق الدفع والباركودات
 class PaymentMethod(db.Model):
     __tablename__ = 'payment_methods'
     id = db.Column(db.Integer, primary_key=True)
@@ -64,7 +60,6 @@ class PaymentMethod(db.Model):
     instructions = db.Column(db.Text, nullable=True)
     qr_image_url = db.Column(db.String(500), nullable=False)
 
-# 5. جدول المستخدمين
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -73,13 +68,12 @@ class User(db.Model):
     balance_usd = db.Column(db.Float, default=0.0)
     balance_syp = db.Column(db.Float, default=0.0)
 
-# 6. جدول الشحن والطلبات
 class DepositRequest(db.Model):
     __tablename__ = 'deposit_requests'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
     amount_usd = db.Column(db.Float, nullable=False, default=0.0)
-    receipt_image_url = db.Column(db.String(500), nullable=True)
+    transaction_id = db.Column(db.String(150), nullable=False)
     status = db.Column(db.String(50), default='pending')
 
 class Order(db.Model):
@@ -91,7 +85,7 @@ class Order(db.Model):
     quantity = db.Column(db.Integer, nullable=False, default=1)
     total_usd = db.Column(db.Float, nullable=False)
     order_type = db.Column(db.String(20), default='game')
-    status = db.Column(db.String(100), default='قيد التنفيذ')
+    status = db.Column(db.String(100), default='قيد المراجعة والتنفيذ اليدوي')
 
 with app.app_context():
     db.create_all()
@@ -114,28 +108,20 @@ def index():
     categories = {}
     for s in services:
         if s.category not in categories:
-            categories[s.category] = {
-                'count': 0,
-                'image_url': s.category_image_url
-            }
+            categories[s.category] = {'count': 0, 'image_url': s.category_image_url}
         categories[s.category]['count'] += 1
         if s.category_image_url and not categories[s.category]['image_url']:
             categories[s.category]['image_url'] = s.category_image_url
-            
-    is_admin = session.get('user') == 'admin'
-    return render_template('index.html', categories=categories, is_admin=is_admin)
+    return render_template('index.html', categories=categories, is_admin=(session.get('user') == 'admin'))
 
 @app.route('/category/<cat_name>')
 def category_services(cat_name):
     services = Service.query.filter_by(category=cat_name).all()
-    is_admin = session.get('user') == 'admin'
-    return render_template('category_services.html', category_name=cat_name, services=services, is_admin=is_admin)
+    return render_template('category_services.html', category_name=cat_name, services=services, is_admin=(session.get('user') == 'admin'))
 
 @app.route('/order', methods=['POST'])
 def place_order():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-        
+    if 'user' not in session: return redirect(url_for('login'))
     service_id = request.form.get('service_id')
     target_input = request.form.get('target_input')
     quantity = int(request.form.get('quantity') or 1)
@@ -144,59 +130,37 @@ def place_order():
     user = User.query.filter_by(username=session['user']).first()
     
     if service and user:
-        if service.service_type == 'api':
-            total_price = (service.price_usd / 1000) * quantity
-        else:
-            total_price = service.price_usd * quantity
-
+        total_price = (service.price_usd / 1000) * quantity if service.service_type == 'api' else service.price_usd * quantity
         if user.balance_usd >= total_price:
             user.balance_usd -= total_price
             user.balance_syp = user.balance_usd * USD_TO_SYP
             
-            order_status = 'قيد المراجعة والتنفيذ'
-            
             if service.service_type == 'api' and service.provider_api_url:
+                order_status = 'تم إرسالها تلقائياً للمزود'
                 try:
-                    payload = {
-                        'key': service.provider_api_key,
-                        'action': 'add',
-                        'service': service.provider_service_id,
-                        'link': target_input,
-                        'quantity': quantity
-                    }
+                    payload = {'key': service.provider_api_key, 'action': 'add', 'service': service.provider_service_id, 'link': target_input, 'quantity': quantity}
                     res = requests.post(service.provider_api_url, data=payload, timeout=10).json()
-                    if 'order' in res:
-                        order_status = f"مقبول آلياً (رقم: {res['order']})"
+                    if 'order' in res: order_status = f"مقبول آلياً (رقم: {res['order']})"
                 except Exception:
                     order_status = 'خطأ اتصال بـ API المزود'
+            else:
+                order_status = 'قيد المراجعة والتنفيذ اليدوي'
 
-            new_order = Order(
-                username=user.username,
-                service_name=service.name,
-                target_input=target_input,
-                quantity=quantity,
-                total_usd=total_price,
-                order_type=service.service_type,
-                status=order_status
-            )
-            db.session.add(new_order)
+            db.session.add(Order(username=user.username, service_name=service.name, target_input=target_input, quantity=quantity, total_usd=total_price, order_type=service.service_type, status=order_status))
             db.session.commit()
-            
+            flash('تم إرسال طلبك بنجاح! 🚀', 'success')
+        else:
+            flash('رصيد المحفظة غير كافٍ لإتمام الطلب.', 'error')
     return redirect(url_for('my_orders'))
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    if session.get('user') != 'admin':
-        return redirect(url_for('login'))
-        
+    if session.get('user') != 'admin': return redirect(url_for('login'))
     if request.method == 'POST':
         action = request.form.get('action')
-        
         if action == 'add_service':
             s_type = request.form.get('service_type', 'game')
-            input_label = 'معرّف الحساب (ID)' if s_type == 'game' else 'الرابط / اسم الحساب'
-            
-            new_service = Service(
+            db.session.add(Service(
                 name=request.form.get('name'),
                 category=request.form.get('category'),
                 sub_category=request.form.get('sub_category') or None,
@@ -206,59 +170,52 @@ def admin_panel():
                 price_usd=float(request.form.get('price_usd') or 0),
                 price_syp=float(request.form.get('price_usd') or 0) * USD_TO_SYP,
                 service_type=s_type,
-                input_label=input_label,
+                input_label='معرّف الحساب (ID)' if s_type == 'game' else 'الرابط / اسم الحساب',
                 min_quantity=int(request.form.get('min_quantity') or 1),
-                max_quantity=int(request.form.get('max_quantity') or 1),
+                max_quantity=int(request.form.get('max_quantity') or 10000),
                 provider_api_url=request.form.get('provider_api_url'),
                 provider_api_key=request.form.get('provider_api_key'),
                 provider_service_id=request.form.get('provider_service_id'),
                 is_available=True
-            )
-            db.session.add(new_service)
+            ))
             db.session.commit()
-
+        elif action == 'delete_service':
+            Service.query.filter_by(id=request.form.get('service_id')).delete()
+            db.session.commit()
+        elif action == 'delete_category':
+            Service.query.filter_by(category=request.form.get('category_name')).delete()
+            db.session.commit()
+        elif action == 'complete_manual_order':
+            ord_id = request.form.get('order_id')
+            o = Order.query.get(ord_id)
+            if o:
+                o.status = 'تم التنفيذ بنجاح ✓'
+                db.session.commit()
         elif action == 'add_account_item':
-            new_acc = AccountItem(
+            db.session.add(AccountItem(
                 title=request.form.get('title'),
                 description=request.form.get('description'),
                 image_url=request.form.get('image_url'),
                 price_usd=float(request.form.get('price_usd') or 0),
                 secret_details=request.form.get('secret_details'),
                 is_sold=False
-            )
-            db.session.add(new_acc)
+            ))
             db.session.commit()
-
+        elif action == 'delete_account_item':
+            AccountItem.query.filter_by(id=request.form.get('account_id')).delete()
+            db.session.commit()
         elif action == 'add_payment_method':
-            new_pm = PaymentMethod(
-                title=request.form.get('title'),
-                instructions=request.form.get('instructions'),
-                qr_image_url=request.form.get('qr_image_url')
-            )
-            db.session.add(new_pm)
+            db.session.add(PaymentMethod(title=request.form.get('title'), instructions=request.form.get('instructions'), qr_image_url=request.form.get('qr_image_url')))
             db.session.commit()
-
         elif action == 'delete_payment_method':
             PaymentMethod.query.filter_by(id=request.form.get('payment_method_id')).delete()
             db.session.commit()
-
         elif action == 'add_notification':
-            new_notif = Notification(
-                title=request.form.get('title'),
-                message=request.form.get('message'),
-                is_active=True
-            )
-            db.session.add(new_notif)
+            db.session.add(Notification(title=request.form.get('title'), message=request.form.get('message'), is_active=True))
             db.session.commit()
-
         elif action == 'delete_notification':
             Notification.query.filter_by(id=request.form.get('notification_id')).delete()
             db.session.commit()
-
-        elif action == 'delete_service':
-            Service.query.filter_by(id=request.form.get('service_id')).delete()
-            db.session.commit()
-
         elif action == 'approve_deposit':
             dep = DepositRequest.query.get(request.form.get('deposit_id'))
             if dep and dep.status == 'pending':
@@ -268,7 +225,6 @@ def admin_panel():
                     u.balance_usd += dep.amount_usd
                     u.balance_syp = u.balance_usd * USD_TO_SYP
                 db.session.commit()
-                
         return redirect(url_for('admin_panel'))
         
     services = Service.query.all()
@@ -276,7 +232,9 @@ def admin_panel():
     deposits = DepositRequest.query.all()
     notifications = Notification.query.all()
     payment_methods = PaymentMethod.query.all()
-    return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods)
+    accounts = AccountItem.query.all()
+    manual_orders = Order.query.filter_by(order_type='game').order_by(Order.id.desc()).all()
+    return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods, accounts=accounts, manual_orders=manual_orders)
 
 @app.route('/accounts')
 def accounts_store():
@@ -285,6 +243,19 @@ def accounts_store():
     if session.get('user'):
         my_purchased = AccountItem.query.filter_by(buyer_username=session['user'], is_sold=True).all()
     return render_template('accounts.html', accounts=accounts, my_purchased=my_purchased)
+
+@app.route('/buy_account/<int:acc_id>', methods=['POST'])
+def buy_account(acc_id):
+    if 'user' not in session: return redirect(url_for('login'))
+    acc = AccountItem.query.get(acc_id)
+    user = User.query.filter_by(username=session['user']).first()
+    if acc and not acc.is_sold and user and user.balance_usd >= acc.price_usd:
+        user.balance_usd -= acc.price_usd
+        user.balance_syp = user.balance_usd * USD_TO_SYP
+        acc.is_sold = True
+        acc.buyer_username = user.username
+        db.session.commit()
+    return redirect(url_for('accounts_store'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -319,13 +290,12 @@ def deposit():
     if 'user' not in session: return redirect(url_for('login'))
     if request.method == 'POST':
         amt = float(request.form.get('amount_usd') or 0)
-        if amt > 0:
-            db.session.add(DepositRequest(username=session['user'], amount_usd=amt, receipt_image_url=request.form.get('receipt_image_url'), status='pending'))
+        tx_id = request.form.get('transaction_id')
+        if amt > 0 and tx_id:
+            db.session.add(DepositRequest(username=session['user'], amount_usd=amt, transaction_id=tx_id, status='pending'))
             db.session.commit()
         return redirect(url_for('deposit'))
-    
-    payment_methods = PaymentMethod.query.all()
-    return render_template('deposit.html', deposits=DepositRequest.query.filter_by(username=session['user']).all(), payment_methods=payment_methods)
+    return render_template('deposit.html', deposits=DepositRequest.query.filter_by(username=session['user']).all(), payment_methods=PaymentMethod.query.all())
 
 @app.route('/my_orders')
 def my_orders():

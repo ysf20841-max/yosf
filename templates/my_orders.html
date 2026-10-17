@@ -2,22 +2,67 @@
 {% block title %}سجل طلباتي | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-4">
-    <h2 class="text-lg font-black text-cyan-400 mb-2">سجل الطلبات والمشتريات 📦</h2>
-    
-    <div class="space-y-3">
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex flex-col gap-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="p-4 rounded-2xl text-xs font-black shadow-lg flex items-center gap-2.5 {% if category == 'success' %}bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 animate-bounce{% else %}bg-rose-500/10 border border-rose-500/30 text-rose-400{% endif %}">
+                <span>{% if category == 'success' %}✨{% else %}⚠️{% endif %}</span>
+                <span>{{ message }}</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="flex justify-between items-center bg-cardDark border border-gray-800 p-4 rounded-2xl shadow-md">
+            <h1 class="text-sm sm:text-base font-black text-cyan-400 flex items-center gap-2">
+                <span>📦</span> سجل طلباتي وخدماتي
+            </h1>
+            <a href="/" class="text-xs bg-gray-900 border border-gray-700 text-gray-300 px-3.5 py-2 rounded-xl font-black hover:border-cyan-500 transition-colors">← الرئيسية</a>
+        </div>
+    </div>
+
+    <div class="space-y-4">
         {% for o in orders %}
-        <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 p-4 rounded-2xl shadow-xl flex items-center justify-between">
-            <div>
-                <h4 class="text-sm font-black text-gray-900 dark:text-white mb-1">{{ o.service_name }}</h4>
-                <p class="text-[11px] text-gray-400 font-semibold">الهدف: <span class="text-cyan-400">{{ o.target_input }}</span> | الكمية: {{ o.quantity }}</p>
-                <span class="inline-block mt-1 text-xs font-black text-purple-400">${{ "%.2f"|format(o.total_usd) }}</span>
+        <div class="bg-cardDark border border-gray-800/80 rounded-3xl p-5 shadow-xl flex flex-col gap-3.5 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
+            <div class="absolute right-0 top-0 bottom-0 w-1.5 {% if 'تم' in o.status or 'مقبول' in o.status %}bg-emerald-500{% elif 'خطأ' in o.status %}bg-rose-500{% else %}bg-amber-500{% endif %}"></div>
+
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-sm font-black text-white mb-0.5">{{ o.service_name }}</h3>
+                    <span class="text-[11px] text-gray-400">نوع الطلب: <strong class="text-cyan-400">{% if o.order_type == 'api' %}رشق تلقائي (API){% else %}شحن يدوي (Game/ID){% endif %}</strong></span>
+                </div>
+                <div class="text-left">
+                    <span class="text-xs font-black text-amber-400 price-tag" data-usd="{{ o.total_usd }}" data-syp="{{ o.total_usd * 150 }}">${{ "%.2f"|format(o.total_usd) }}</span>
+                </div>
             </div>
-            <span class="bg-cyan-500/20 text-cyan-400 text-xs px-3 py-1 rounded-full font-black">{{ o.status }}</span>
+
+            <div class="bg-gray-900/90 border border-gray-800/80 rounded-2xl p-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div>
+                    <span class="text-gray-400 text-[10px] block mb-0.5">الرابط / الأيدي المدخل:</span>
+                    <span class="text-cyan-300 font-mono font-bold break-all">{{ o.target_input }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 text-[10px] block mb-0.5">الكمية المطلوبة:</span>
+                    <span class="text-white font-bold">{{ o.quantity }}</span>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-gray-800/80 text-xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full {% if 'تم' in o.status or 'مقبول' in o.status %}bg-emerald-500 animate-pulse{% elif 'خطأ' in o.status %}bg-rose-500{% else %}bg-amber-500 animate-ping{% endif %}"></span>
+                    <span class="font-black text-gray-300 text-[11px]">{{ o.status }}</span>
+                </div>
+                <span class="text-[10px] text-gray-500 font-mono">رقم الطلب: #{{ o.id }}</span>
+            </div>
         </div>
         {% else %}
-        <div class="bg-cardLight dark:bg-cardDark border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center shadow-xl">
-            <p class="text-xs font-bold text-gray-400">لم تقم بأي طلبات بعد.</p>
+        <div class="bg-cardDark border border-gray-800 rounded-3xl p-10 text-center space-y-3">
+            <div class="text-3xl">📭</div>
+            <h3 class="text-sm font-black text-white">لا توجد طلبات سابقة حتى الآن</h3>
+            <p class="text-xs text-gray-400">تصفح الأقسام واطلب خدماتك المفضلة وستظهر هنا بكل تفاصيلها.</p>
+            <a href="/" class="inline-block bg-cyan-500 text-gray-950 font-black px-5 py-2.5 rounded-xl text-xs mt-2">تصفح الخدمات 🚀</a>
         </div>
         {% endfor %}
     </div>
