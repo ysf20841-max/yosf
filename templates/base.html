@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+شش<!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
     <meta charset="UTF-8">
@@ -37,12 +37,12 @@
     </div>
     {% endif %}
 
-    <header class="bg-cardLight/95 dark:bg-cardDark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800/80 sticky top-0 z-40 px-3 py-3 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-2.5">
-            <button onclick="toggleMobileMenu()" class="text-cyan-400 p-2 rounded-xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex flex-col justify-center items-center w-10 h-10 gap-1 shadow-sm active:scale-95 transition-transform">
-                <span class="w-4 h-0.5 bg-cyan-400 rounded-full"></span>
-                <span class="w-4 h-0.5 bg-cyan-400 rounded-full"></span>
-                <span class="w-4 h-0.5 bg-cyan-400 rounded-full"></span>
+    <header class="bg-cardLight/95 dark:bg-cardDark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800/80 sticky top-0 z-40 px-3.5 py-3 flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleMobileMenu()" class="text-cyan-400 p-2.5 rounded-2xl bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 flex flex-col justify-center items-center w-11 h-11 gap-1.5 shadow-md hover:border-cyan-500 active:scale-95 transition-all">
+                <span class="w-5 h-0.5 bg-cyan-400 rounded-full"></span>
+                <span class="w-5 h-0.5 bg-cyan-400 rounded-full"></span>
+                <span class="w-5 h-0.5 bg-cyan-400 rounded-full"></span>
             </button>
             <a href="/" class="text-sm sm:text-base font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-500">
                 أوج ميديا <span class="text-[8px] bg-cyan-500/10 text-cyan-400 px-1.5 py-0.5 rounded-full border border-cyan-500/30">OWJ</span>
@@ -51,7 +51,7 @@
 
         <div class="flex items-center gap-2">
             {% if current_user %}
-            <a href="/deposit" class="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/30 px-2.5 py-1.5 rounded-xl text-[11px] font-black text-cyan-400 shadow-inner">
+            <a href="/deposit" class="flex items-center gap-1 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-xl text-[11px] font-black text-cyan-400 shadow-inner">
                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                 <span class="price-tag" data-usd="{{ current_user.balance_usd }}" data-syp="{{ current_user.balance_syp }}">${{ "%.2f"|format(current_user.balance_usd) }}</span>
             </a>
@@ -59,7 +59,7 @@
             <a href="/login" class="bg-gray-100 dark:bg-gray-900 border border-gray-700 text-cyan-400 text-[11px] px-3 py-1.5 rounded-xl font-black">دخول</a>
             <a href="/register" class="bg-cyan-500 text-gray-950 text-[11px] px-3 py-1.5 rounded-xl font-black">حساب جديد</a>
             {% endif %}
-            <button onclick="toggleCurrency()" id="currency-btn" class="bg-gray-100 dark:bg-gray-900 border border-gray-700 text-cyan-400 text-[11px] px-2 py-1.5 rounded-xl font-black">USD</button>
+            <button onclick="toggleCurrency()" id="currency-btn" class="bg-gray-100 dark:bg-gray-900 border border-gray-700 text-cyan-400 text-[11px] px-2.5 py-1.5 rounded-xl font-black">USD</button>
         </div>
     </header>
 
@@ -73,7 +73,12 @@
 
                 {% if current_user %}
                 <div class="bg-gray-100 dark:bg-gray-900/80 border border-gray-800 rounded-2xl p-3 mb-4 text-center">
-                    <h3 class="text-xs font-black text-white">{{ current_user.username }}</h3>
+                    <h3 class="text-xs font-black text-white flex items-center justify-center gap-1.5">
+                        {{ current_user.username }}
+                        {% if current_user.role == 'merchant' %}
+                        <span class="bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[9px] px-1.5 py-0.5 rounded-full font-black">تاجر 🌟</span>
+                        {% endif %}
+                    </h3>
                     <div class="mt-1 flex items-center justify-center gap-1 bg-cyan-500/10 py-1 px-2 rounded-xl border border-cyan-500/20 text-[11px] text-cyan-400 font-black">
                         الرصيد: <span class="price-tag" data-usd="{{ current_user.balance_usd }}" data-syp="{{ current_user.balance_syp }}">${{ "%.2f"|format(current_user.balance_usd) }}</span>
                     </div>
@@ -90,7 +95,7 @@
                         <span>☀️ الوضع الليلي / النهاري</span>
                         <span class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-cyan-400">تغيير</span>
                     </button>
-                    {% if session.get('user') == 'admin' %}
+                    {% if current_user and current_user.role == 'admin' %}
                     <a href="/admin" class="bg-cyan-500/10 border border-cyan-500/40 p-2.5 rounded-xl text-cyan-400 flex items-center gap-2.5">⚙️ لوحة تحكم الأدمن</a>
                     {% endif %}
                 </div>
@@ -105,6 +110,19 @@
     </div>
 
     <main class="flex-grow container mx-auto px-3 py-5 max-w-4xl">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="space-y-2 mb-4">
+              {% for category, message in messages %}
+                <div class="p-3.5 rounded-2xl text-xs font-black shadow-lg flex items-center gap-2.5 {% if category == 'success' %}bg-emerald-500/10 border border-emerald-500/30 text-emerald-400{% else %}bg-rose-500/10 border border-rose-500/30 text-rose-400{% endif %}">
+                  <span>{% if category == 'success' %}✨{% else %}⚠️{% endif %}</span>
+                  <span>{{ message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
         {% block content %}{% endblock %}
     </main>
 

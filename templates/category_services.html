@@ -1,29 +1,51 @@
-{% extends "base.html" %}
+شش{% extends "base.html" %}
 {% block title %}{{ category_name }} | أوج ميديا{% endblock %}
 
 {% block content %}
 <div class="space-y-6">
     <div class="flex justify-between items-center bg-cardDark border border-gray-800 p-4 rounded-2xl shadow-md">
-        <h1 class="text-base sm:text-lg font-black text-cyan-400">{{ category_name }}</h1>
+        <h1 class="text-sm sm:text-base font-black text-cyan-400">{{ category_name }}</h1>
         <a href="/" class="text-xs bg-gray-900 border border-gray-700 text-gray-300 px-3 py-2 rounded-xl font-black">← العودة للأقسام</a>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <!-- شبكة الخدمات: 3 مربعات بجانب بعضها -->
+    <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
         {% for s in services %}
-        <div class="bg-cardDark border border-gray-800/80 rounded-2xl p-5 shadow-xl flex flex-col justify-between hover:border-cyan-500/50 transition-all">
+        <div class="bg-cardDark border border-gray-800/80 rounded-2xl p-2 sm:p-3.5 shadow-xl flex flex-col justify-between hover:border-cyan-500/50 transition-all text-center {% if not s.is_available %}opacity-60 grayscale{% endif %}">
             <div>
-                <div class="flex items-center gap-3.5 mb-3">
-                    <img src="{{ s.service_image_url or s.sub_category_image_url or s.category_image_url or 'https://via.placeholder.com/80' }}" class="w-16 h-16 object-cover rounded-2xl bg-gray-900 border border-gray-700 p-1 flex-shrink-0">
-                    <div>
-                        <h3 class="text-sm font-black text-white mb-1">{{ s.name }}</h3>
-                        <span class="text-xs font-bold text-cyan-400 price-tag" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">${{ "%.2f"|format(s.price_usd) }}</span>
+                <div class="w-full aspect-square bg-gray-950 rounded-xl border border-gray-800 overflow-hidden mb-2 p-1 relative">
+                    <img src="{{ s.service_image_url or s.sub_category_image_url or s.category_image_url or 'https://via.placeholder.com/100' }}" class="w-full h-full object-cover rounded-lg">
+                    {% if not s.is_available %}
+                    <div class="absolute inset-0 bg-black/70 flex items-center justify-center p-1">
+                        <span class="text-[9px] font-black text-rose-400 bg-rose-500/20 border border-rose-500/40 px-1.5 py-0.5 rounded">غير متوفر</span>
                     </div>
+                    {% endif %}
                 </div>
+                <h3 class="text-[11px] sm:text-xs font-black text-white mb-0.5 line-clamp-2 leading-tight">{{ s.name }}</h3>
+                
+                <div class="text-[9px] text-amber-400 font-bold mb-1.5 flex items-center justify-center gap-1">
+                    <span>⏱️</span> <span>{{ s.delivery_time or 'فوري ⚡' }}</span>
+                </div>
+
+                {% if current_user and current_user.role == 'merchant' and current_user.discount_percent > 0 %}
+                <div class="space-y-0.5 mb-2">
+                    <span class="text-[9px] text-gray-400 line-through">${{ "%.2f"|format(s.original_price) }}</span>
+                    <span class="text-[10px] sm:text-xs font-black text-emerald-400 price-tag block" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">${{ "%.2f"|format(s.price_usd) }} (تاجر)</span>
+                </div>
+                {% else %}
+                <span class="text-[10px] sm:text-xs font-bold text-cyan-400 price-tag block mb-2" data-usd="{{ s.price_usd }}" data-syp="{{ s.price_syp }}">${{ "%.2f"|format(s.price_usd) }}</span>
+                {% endif %}
             </div>
 
-            <button type="button" onclick="openOrderModal('{{ s.id }}', '{{ s.name }}', '{{ s.price_usd }}', '{{ s.price_syp }}', '{{ s.input_label }}', '{{ s.service_type }}', '{{ s.min_quantity }}', '{{ s.max_quantity }}')" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-gray-950 font-black py-3 rounded-xl text-xs shadow-lg transition-transform active:scale-95 mt-3">
-                شراء أو طلب الخدمة 🛒
+            {% if s.is_available %}
+            <button type="button" onclick="openOrderModal('{{ s.id }}', '{{ s.name }}', '{{ s.price_usd }}', '{{ s.price_syp }}', '{{ s.input_label }}', '{{ s.service_type }}', '{{ s.min_quantity }}', '{{ s.max_quantity }}')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-2 rounded-xl text-[10px] sm:text-xs shadow-md transition-transform active:scale-95">
+                شراء 🛒
             </button>
+            {% else %}
+            <button type="button" disabled class="w-full bg-gray-800 text-gray-500 font-bold py-2 rounded-xl text-[10px] sm:text-xs cursor-not-allowed">
+                غير متوفر ❌
+            </button>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -53,7 +75,6 @@
                 <input type="number" name="quantity" id="modal-quantity" value="1" oninput="calculateTotal()" class="w-full bg-gray-950 border border-gray-700 rounded-xl px-3.5 py-3 text-xs text-white font-bold">
             </div>
 
-            <!-- السعر الإجمالي تحت الكمية مباشرة -->
             <div class="bg-gray-900/80 border border-gray-800 p-3.5 rounded-2xl flex justify-between items-center">
                 <span class="text-xs font-bold text-gray-400">السعر الإجمالي:</span>
                 <span id="modal-service-price" class="text-sm font-black text-amber-400">$0.00</span>

@@ -26,10 +26,11 @@ class Service(db.Model):
     service_image_url = db.Column(db.String(500), nullable=True)
     price_usd = db.Column(db.Float, nullable=False, default=0.0)
     price_syp = db.Column(db.Float, nullable=False, default=0.0)
-    service_type = db.Column(db.String(20), default='game') # 'game' يدوي أو 'api' تلقائي
+    service_type = db.Column(db.String(20), default='game')
     input_label = db.Column(db.String(100), default='معرّف الحساب (ID)')
     min_quantity = db.Column(db.Integer, default=1)
     max_quantity = db.Column(db.Integer, default=10000)
+    delivery_time = db.Column(db.String(100), default='فوري ⚡')
     provider_api_url = db.Column(db.String(300), nullable=True)
     provider_api_key = db.Column(db.String(300), nullable=True)
     provider_service_id = db.Column(db.String(50), nullable=True)
@@ -67,6 +68,8 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     balance_usd = db.Column(db.Float, default=0.0)
     balance_syp = db.Column(db.Float, default=0.0)
+    role = db.Column(db.String(20), default='user') # 'user', 'merchant' (تاجر), 'admin'
+    discount_percent = db.Column(db.Float, default=0.0) # نسبة الخصم المئوية للتاجر
 
 class DepositRequest(db.Model):
     __tablename__ = 'deposit_requests'
@@ -91,7 +94,7 @@ with app.app_context():
     db.create_all()
     admin_user = User.query.filter_by(username='admin').first()
     if not admin_user:
-        db.session.add(User(username='admin', password='123456', balance_usd=100.0))
+        db.session.add(User(username='admin', password='123456', balance_usd=100.0, role='admin'))
         db.session.commit()
 
 @app.context_processor
@@ -117,7 +120,28 @@ def index():
 @app.route('/category/<cat_name>')
 def category_services(cat_name):
     services = Service.query.filter_by(category=cat_name).all()
-    return render_template('category_services.html', category_name=cat_name, services=services, is_admin=(session.get('user') == 'admin'))
+    current_user = User.query.filter_by(username=session.get('user')).first() if session.get('user') else None
+    
+    # حساب السعر بعد خصم التتاجر إن وجد
+    processed_services = []
+    for s in services:
+        effective_price = s.price_usd
+        if current_user and current_user.role == 'merchant' and current_user.discount_percent > 0:
+            effective_price = s.price_usd * (1 - (current_user.discount_percent / 100))
+        
+        # إنشاء كائن مؤقت أو تعديل السعر للعرض
+        s_dict = {
+            'id': s.id, 'name': s.name, 'category': s.category,
+            'service_image_url': s.service_image_url, 'sub_category_image_url': s.sub_category_image_url,
+            'category_image_url': s.category_image_url, 'price_usd': effective_price,
+            'price_syp': effective_price * USD_TO_SYP, 'original_price': s.price_usd,
+            'service_type': s.service_type, 'input_label': s.input_label,
+            'min_quantity': s.min_quantity, 'max_quantity': s.max_quantity,
+            'delivery_time': s.delivery_time, 'is_available': s.is_available
+        }
+        processed_services.append(s_dict)
+
+    return render_template('category_services.html', category_name=cat_name, services=processed_services)
 
 @app.route('/order', methods=['POST'])
 def place_order():
@@ -130,7 +154,12 @@ def place_order():
     user = User.query.filter_by(username=session['user']).first()
     
     if service and user:
-        total_price = (service.price_usd / 1000) * quantity if service.service_type == 'api' else service.price_usd * quantity
+        base_price = service.price_usd
+        if user.role == 'merchant' and user.discount_percent > 0:
+            base_price = service.price_usd * (1 - (user.discount_percent / 100))
+
+        total_price = (base_price / 1000) * quantity if service.service_type == 'api' else base_price * quantity
+        
         if user.balance_usd >= total_price:
             user.balance_usd -= total_price
             user.balance_syp = user.balance_usd * USD_TO_SYP
@@ -173,11 +202,30 @@ def admin_panel():
                 input_label='معرّف الحساب (ID)' if s_type == 'game' else 'الرابط / اسم الحساب',
                 min_quantity=int(request.form.get('min_quantity') or 1),
                 max_quantity=int(request.form.get('max_quantity') or 10000),
+                delivery_time=request.form.get('delivery_time') or 'فوري ⚡',
                 provider_api_url=request.form.get('provider_api_url'),
                 provider_api_key=request.form.get('provider_api_key'),
                 provider_service_id=request.form.get('provider_service_id'),
-                is_available=True
+                is_available=True if request.form.get('is_available') == 'true' else False
             ))
+            db.session.commit()
+        elif action == 'create_merchant':
+            m_username = request.form.get('username').strip()
+            m_password = request.form.get('password').strip()
+            discount = float(request.form.get('discount_percent') or 0)
+            gift_amount = float(request.form.get('gift_amount') or 0)
+            
+            existing = User.query.filter_by(username=m_username).first()
+            if existing:
+                existing.role = 'merchant'
+                existing.discount_percent = discount
+                existing.balance_usd += gift_amount
+                existing.balance_syp = existing.balance_usd * USD_TO_SYP
+                flash(f'تم تحديث حساب {m_username} إلى تاجر بنجاح مع خصم {discount}% وهدية ${gift_amount}!', 'success')
+            else:
+                new_m = User(username=m_username, password=m_password, role='merchant', discount_percent=discount, balance_usd=gift_amount, balance_syp=gift_amount * USD_TO_SYP)
+                db.session.add(new_m)
+                flash(f'تم إنشاء حساب تاجر جديد لـ {م_username if "م_username" in locals() else m_username} مع خصم {discount}% وهدية ${gift_amount}!', 'success')
             db.session.commit()
         elif action == 'delete_service':
             Service.query.filter_by(id=request.form.get('service_id')).delete()
@@ -191,6 +239,17 @@ def admin_panel():
             if o:
                 o.status = 'تم التنفيذ بنجاح ✓'
                 db.session.commit()
+        elif action == 'refund_or_add_balance':
+            target_username = request.form.get('username').strip()
+            amount = float(request.form.get('amount_usd') or 0)
+            u = User.query.filter_by(username=target_username).first()
+            if u and amount != 0:
+                u.balance_usd += amount
+                u.balance_syp = u.balance_usd * USD_TO_SYP
+                db.session.commit()
+                flash(f'تم تعديل رصيد المستخدم {target_username} بمقدار ${amount} بنجاح!', 'success')
+            else:
+                flash('المستخدم غير موجود أو المبلغ غير صحيح.', 'error')
         elif action == 'add_account_item':
             db.session.add(AccountItem(
                 title=request.form.get('title'),
@@ -233,8 +292,9 @@ def admin_panel():
     notifications = Notification.query.all()
     payment_methods = PaymentMethod.query.all()
     accounts = AccountItem.query.all()
+    merchants = User.query.filter_by(role='merchant').all()
     manual_orders = Order.query.filter_by(order_type='game').order_by(Order.id.desc()).all()
-    return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods, accounts=accounts, manual_orders=manual_orders)
+    return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods, accounts=accounts, merchants=merchants, manual_orders=manual_orders)
 
 @app.route('/accounts')
 def accounts_store():
@@ -261,10 +321,16 @@ def buy_account(acc_id):
 def login():
     error = None
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form.get('username').strip(), password=request.form.get('password').strip()).first()
+        un = request.form.get('username').strip()
+        pw = request.form.get('password').strip()
+        user = User.query.filter_by(username=un, password=pw).first()
         if user:
             session.permanent = True
             session['user'] = user.username
+            if user.role == 'merchant':
+                flash(f'أهلاً بك يا شريكنا التاجر المميز {user.username}! 🌟 تم تطبيق خصم حصري بنسبة {user.discount_percent}% على كافة خدمات المنصة.', 'success')
+            else:
+                flash(f'مرحباً بك مجدداً {user.username} في أوج ميديا ⚡', 'success')
             return redirect(url_for('index'))
         error = 'بيانات الدخول غير صحيحة'
     return render_template('login.html', error=error)
@@ -278,10 +344,11 @@ def register():
         if User.query.filter_by(username=un).first():
             error = 'اسم المستخدم موجود مسبقاً'
         else:
-            db.session.add(User(username=un, password=pw))
+            db.session.add(User(username=un, password=pw, role='user'))
             db.session.commit()
             session.permanent = True
             session['user'] = un
+            flash('تم إنشاء حسابك بنجاح! أهلاً بك في أوج ميديا 🚀', 'success')
             return redirect(url_for('index'))
     return render_template('register.html', error=error)
 
