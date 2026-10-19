@@ -1,7 +1,9 @@
 import os
+import csv
+import io
 from datetime import timedelta
 import requests
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, Response
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -26,7 +28,7 @@ class Service(db.Model):
     service_image_url = db.Column(db.String(500), nullable=True)
     price_usd = db.Column(db.Float, nullable=False, default=0.0)
     price_syp = db.Column(db.Float, nullable=False, default=0.0)
-    service_type = db.Column(db.String(20), default='game')
+    service_type = db.Column(db.String(20), default='game') # 'game', 'whatsapp_api', 'api'
     input_label = db.Column(db.String(100), default='معرّف الحساب (ID)')
     min_quantity = db.Column(db.Integer, default=1)
     max_quantity = db.Column(db.Integer, default=10000)
@@ -68,8 +70,8 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     balance_usd = db.Column(db.Float, default=0.0)
     balance_syp = db.Column(db.Float, default=0.0)
-    role = db.Column(db.String(20), default='user') # 'user', 'merchant' (تاجر), 'admin'
-    discount_percent = db.Column(db.Float, default=0.0) # نسبة الخصم المئوية للتاجر
+    role = db.Column(db.String(20), default='user')
+    discount_percent = db.Column(db.Float, default=0.0)
 
 class DepositRequest(db.Model):
     __tablename__ = 'deposit_requests'
@@ -122,14 +124,12 @@ def category_services(cat_name):
     services = Service.query.filter_by(category=cat_name).all()
     current_user = User.query.filter_by(username=session.get('user')).first() if session.get('user') else None
     
-    # حساب السعر بعد خصم التتاجر إن وجد
     processed_services = []
     for s in services:
         effective_price = s.price_usd
         if current_user and current_user.role == 'merchant' and current_user.discount_percent > 0:
             effective_price = s.price_usd * (1 - (current_user.discount_percent / 100))
         
-        # إنشاء كائن مؤقت أو تعديل السعر للعرض
         s_dict = {
             'id': s.id, 'name': s.name, 'category': s.category,
             'service_image_url': s.service_image_url, 'sub_category_image_url': s.sub_category_image_url,
@@ -172,6 +172,14 @@ def place_order():
                     if 'order' in res: order_status = f"مقبول آلياً (رقم: {res['order']})"
                 except Exception:
                     order_status = 'خطأ اتصال بـ API المزود'
+            elif service.service_type == 'whatsapp_api' and service.provider_api_url:
+                order_status = 'جاري جلب رقم الواتساب عبر API...'
+                try:
+                    res = requests.get(service.provider_api_url, params={'key': service.provider_api_key, 'service': service.provider_service_id}, timeout=10).json()
+                    if 'number' in res:
+                        order_status = f"تم استخراج الرقم بنجاح: {res['number']}"
+                except Exception:
+                    order_status = 'قيد المعالجة (تحقق من API الواتساب)'
             else:
                 order_status = 'قيد المراجعة والتنفيذ اليدوي'
 
@@ -199,7 +207,7 @@ def admin_panel():
                 price_usd=float(request.form.get('price_usd') or 0),
                 price_syp=float(request.form.get('price_usd') or 0) * USD_TO_SYP,
                 service_type=s_type,
-                input_label='معرّف الحساب (ID)' if s_type == 'game' else 'الرابط / اسم الحساب',
+                input_label='رقم الهاتف المطلوب / ملاحظات' if 'whatsapp' in s_type else ('معرّف الحساب (ID)' if s_type == 'game' else 'الرابط / اسم الحساب'),
                 min_quantity=int(request.form.get('min_quantity') or 1),
                 max_quantity=int(request.form.get('max_quantity') or 10000),
                 delivery_time=request.form.get('delivery_time') or 'فوري ⚡',
@@ -221,12 +229,19 @@ def admin_panel():
                 existing.discount_percent = discount
                 existing.balance_usd += gift_amount
                 existing.balance_syp = existing.balance_usd * USD_TO_SYP
-                flash(f'تم تحديث حساب {m_username} إلى تاجر بنجاح مع خصم {discount}% وهدية ${gift_amount}!', 'success')
+                flash(f'تم تحديث حساب {m_username} إلى تاجر بنجاح!', 'success')
             else:
                 new_m = User(username=m_username, password=m_password, role='merchant', discount_percent=discount, balance_usd=gift_amount, balance_syp=gift_amount * USD_TO_SYP)
                 db.session.add(new_m)
-                flash(f'تم إنشاء حساب تاجر جديد لـ {م_username if "م_username" in locals() else m_username} مع خصم {discount}% وهدية ${gift_amount}!', 'success')
+                flash(f'تم إنشاء حساب تاجر جديد لـ {m_username} بنجاح!', 'success')
             db.session.commit()
+        elif action == 'delete_merchant':
+            m_id = request.form.get('merchant_id')
+            m_user = User.query.get(m_id)
+            if m_user and m_user.role == 'merchant':
+                db.session.delete(m_user)
+                db.session.commit()
+                flash('تم حذف حساب التاجر بنجاح 🗑️', 'success')
         elif action == 'delete_service':
             Service.query.filter_by(id=request.form.get('service_id')).delete()
             db.session.commit()
@@ -296,6 +311,86 @@ def admin_panel():
     manual_orders = Order.query.filter_by(order_type='game').order_by(Order.id.desc()).all()
     return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods, accounts=accounts, merchants=merchants, manual_orders=manual_orders)
 
+@app.route('/admin/export_backup')
+def export_backup():
+    if session.get('user') != 'admin': return redirect(url_for('login'))
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    writer.writerow(['--- USERS & BALANCES ---'])
+    writer.writerow(['Username', 'Password', 'BalanceUSD', 'Role', 'DiscountPercent'])
+    for u in User.query.all():
+        writer.writerow([u.username, u.password, u.balance_usd, u.role, u.discount_percent])
+        
+    writer.writerow(['--- SERVICES & PRICES ---'])
+    writer.writerow(['Name', 'Category', 'PriceUSD', 'MinQty', 'MaxQty', 'DeliveryTime', 'IsAvailable'])
+    for s in Service.query.all():
+        writer.writerow([s.name, s.category, s.price_usd, s.min_quantity, s.max_quantity, s.delivery_time, s.is_available])
+
+    output.seek(0)
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=owj_media_backup.csv"}
+    )
+
+@app.route('/admin/restore_backup', methods=['POST'])
+def restore_backup():
+    if session.get('user') != 'admin': return redirect(url_for('login'))
+    
+    file = request.files.get('backup_file')
+    if not file:
+        flash('الرجاء اختيار ملف النسخة الاحتياطية (CSV).', 'error')
+        return redirect(url_for('admin_panel'))
+        
+    try:
+        stream = io.StringIO(file.read().decode("utf-8"), newline=None)
+        reader = csv.reader(stream)
+        
+        section = None
+        for row in reader:
+            if not row: continue
+            if '--- USERS & BALANCES ---' in row[0]:
+                section = 'users'
+                next(reader, None)
+                continue
+            elif '--- SERVICES & PRICES ---' in row[0]:
+                section = 'services'
+                next(reader, None)
+                continue
+                
+            if section == 'users' and len(row) >= 5:
+                un, pw, bal_usd, role, disc = row[0], row[1], float(row[2]), row[3], float(row[4])
+                existing_user = User.query.filter_by(username=un).first()
+                if existing_user:
+                    existing_user.balance_usd = bal_usd
+                    existing_user.balance_syp = bal_usd * USD_TO_SYP
+                    existing_user.role = role
+                    existing_user.discount_percent = disc
+                else:
+                    db.session.add(User(username=un, password=pw, balance_usd=bal_usd, balance_syp=bal_usd*USD_TO_SYP, role=role, discount_percent=disc))
+            
+            elif section == 'services' and len(row) >= 7:
+                name, cat, price, min_q, max_q, del_time, is_av = row[0], row[1], float(row[2]), int(row[3]), int(row[4]), row[5], row[6] == 'True'
+                existing_srv = Service.query.filter_by(name=name, category=cat).first()
+                if existing_srv:
+                    existing_srv.price_usd = price
+                    existing_srv.price_syp = price * USD_TO_SYP
+                    existing_srv.min_quantity = min_q
+                    existing_srv.max_quantity = max_q
+                    existing_srv.delivery_time = del_time
+                    existing_srv.is_available = is_av
+                else:
+                    db.session.add(Service(name=name, category=cat, price_usd=price, price_syp=price*USD_TO_SYP, min_quantity=min_q, max_quantity=max_q, delivery_time=del_time, is_available=is_av))
+                    
+        db.session.commit()
+        flash('تم استعادة النسخة الاحتياطية وتحديث الزبائن والأسعار بنجاح تام! 🚀', 'success')
+    except Exception as e:
+        flash(f'حدث خطأ أثناء قراءة ملف النسخة الاحتياطية: {str(e)}', 'error')
+        
+    return redirect(url_for('admin_panel'))
+
 @app.route('/accounts')
 def accounts_store():
     accounts = AccountItem.query.filter_by(is_sold=False).all()
@@ -328,7 +423,7 @@ def login():
             session.permanent = True
             session['user'] = user.username
             if user.role == 'merchant':
-                flash(f'أهلاً بك يا شريكنا التاجر المميز {user.username}! 🌟 تم تطبيق خصم حصري بنسبة {user.discount_percent}% على كافة خدمات المنصة.', 'success')
+                flash(f'أهلاً بك يا شريكنا التاجر المميز {user.username}! 🌟 تم تطبيق خصم حصري بنسبة {user.discount_percent}% على خدمات المنصة.', 'success')
             else:
                 flash(f'مرحباً بك مجدداً {user.username} في أوج ميديا ⚡', 'success')
             return redirect(url_for('index'))

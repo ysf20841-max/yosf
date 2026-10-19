@@ -1,4 +1,4 @@
-ش{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}لوحة التحكم | أوج ميديا{% endblock %}
 
 {% block content %}
@@ -32,9 +32,26 @@
         </div>
     </div>
 
-    <!-- قسم إنشاء أو إدارة حسابات التجار (نسبة الخصم والهدايا الترحيبية) -->
+    <!-- قسم إدارة التجار والنسخ الاحتياطي (تحميل واستعادة) وحذف التجار -->
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
-        <h2 class="text-sm font-black text-amber-400 mb-4">إنشاء أو ترقية حساب تاجر (Reseller VIP) 🌟</h2>
+        <h2 class="text-sm font-black text-amber-400 mb-4">إدارة حسابات التجار والنسخ الاحتياطي 🌟</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 bg-gray-900 p-3 rounded-2xl border border-gray-800">
+            <div>
+                <span class="text-[11px] text-gray-300 block mb-1.5 font-bold">حفظ نسخة احتياطية:</span>
+                <a href="/admin/export_backup" class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black px-3 py-2.5 rounded-xl text-xs shadow flex items-center justify-center gap-1.5">
+                    📥 تحميل ملف النسخة الاحتياطية (CSV)
+                </a>
+            </div>
+            <div>
+                <span class="text-[11px] text-gray-300 block mb-1.5 font-bold">استعادة بيانات الزباين والأسعار:</span>
+                <form action="/admin/restore_backup" method="POST" enctype="multipart/form-data" class="flex gap-2">
+                    <input type="file" name="backup_file" accept=".csv" required class="bg-gray-950 border border-gray-700 rounded-xl p-1.5 text-[10px] text-white w-full">
+                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black px-3 py-2 rounded-xl text-xs whitespace-nowrap shadow">استعادة ♻️</button>
+                </form>
+            </div>
+        </div>
+
         <form method="POST" class="space-y-3 mb-4">
             <input type="hidden" name="action" value="create_merchant">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -45,7 +62,7 @@
                 <input type="number" step="0.1" name="discount_percent" required placeholder="نسبة الخصم للتاجر (%) (مثال: 15)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
                 <input type="number" step="0.01" name="gift_amount" value="0" placeholder="هدية رصيد ترحيبية ($)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             </div>
-            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-950 font-black py-3 rounded-xl shadow">حفظ واعتماد حساب التاجر وتطبيق الخصم والهدايا 🚀</button>
+            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-950 font-black py-3 rounded-xl shadow">حفظ واعتماد حساب التاجر 🚀</button>
         </form>
 
         <div class="space-y-2 pt-3 border-t border-gray-800">
@@ -54,9 +71,13 @@
             <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
                 <div>
                     <span class="text-amber-400 font-bold">التاجر: {{ m.username }}</span>
-                    <span class="text-cyan-400 mr-2">(نسبة الخصم: {{ m.discount_percent }}%)</span>
+                    <span class="text-cyan-400 mr-2">(خصم: {{ m.discount_percent }}% | رصيد: ${{ "%.2f"|format(m.balance_usd) }})</span>
                 </div>
-                <span class="text-gray-400">الرصيد: ${{ "%.2f"|format(m.balance_usd) }}</span>
+                <form method="POST" onsubmit="return confirm('هل أنت متأكد من حذف حساب التاجر هذا؟');">
+                    <input type="hidden" name="action" value="delete_merchant">
+                    <input type="hidden" name="merchant_id" value="{{ m.id }}">
+                    <button type="submit" class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg font-bold">حذف 🗑️</button>
+                </form>
             </div>
             {% else %}
             <p class="text-gray-500 text-center text-[11px]">لا توجد حسابات تجار مسجلة حتى الآن.</p>
@@ -64,27 +85,27 @@
         </div>
     </div>
 
-    <!-- قسم تعويض أو إضافة رصيد للمستخدم يدويًا -->
+    <!-- تعويض أو إضافة رصيد للمستخدم يدويًا -->
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
         <h2 class="text-sm font-black text-cyan-400 mb-4">تعويض أو إضافة رصيد لمستخدم يدويًا (حل مشاكل الطلبات) 💵</h2>
         <form method="POST" class="space-y-3">
             <input type="hidden" name="action" value="refund_or_add_balance">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input type="text" name="username" required placeholder="اسم المستخدم (Username)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
-                <input type="number" step="0.01" name="amount_usd" required placeholder="المبلغ بالدولار ($) (مثال: 2.5 أو -1 للإخصام)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+                <input type="number" step="0.01" name="amount_usd" required placeholder="المبلغ بالدولار ($)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             </div>
             <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3 rounded-xl shadow">تنفيذ وإضافة المبلغ لمحفظة المستخدم 🚀</button>
         </form>
     </div>
 
-    <!-- إضافة خدمة جديدة مع مدة التنفيذ وحالة التوفر والـ API -->
+    <!-- إضافة خدمة أو أرقام واتساب جديدة -->
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
-        <h2 class="text-sm font-black text-cyan-400 mb-4">إضافة خدمة جديدة وتخصيص المدة والـ API 🚀</h2>
+        <h2 class="text-sm font-black text-cyan-400 mb-4">إضافة خدمة أو أرقام واتساب جديدة 📱</h2>
         <form method="POST" class="space-y-3">
             <input type="hidden" name="action" value="add_service">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input type="text" name="name" required placeholder="اسم الخدمة..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
-                <input type="text" name="category" required placeholder="القسم الرئيسي..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+                <input type="text" name="name" required placeholder="اسم الخدمة (مثال: رقم واتساب أمريكي)..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+                <input type="text" name="category" required value="أرقام واتساب وتفعيل" placeholder="القسم الرئيسي..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input type="text" name="category_image_url" placeholder="رابط صورة القسم الرئيسي..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
@@ -93,16 +114,17 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <select name="service_type" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white font-bold">
-                    <option value="game">يدوي (شحن العاب / ايدي)</option>
-                    <option value="api">تلقائي API (رشق - لكل 1000)</option>
+                    <option value="whatsapp_api">أرقام واتساب (تلقائي API)</option>
+                    <option value="game">يدوي (شحن ألعاب / أيدي)</option>
+                    <option value="api">تلقائي سوشيال ميديا (رشق - لكل 1000)</option>
                 </select>
                 <input type="number" step="0.01" name="price_usd" required placeholder="السعر ($)" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
-                <input type="text" name="delivery_time" value="فوري ⚡" placeholder="مدة التنفيذ (مثال: خلال 22 دقيقة)" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-center">
+                <input type="text" name="delivery_time" value="فوري ⚡" placeholder="مدة التنفيذ..." class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-center">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="number" name="min_quantity" value="1" placeholder="الحد الأدنى" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-center">
-                    <input type="number" name="max_quantity" value="10000" placeholder="الحد الأقصى" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-center">
+                    <input type="number" name="max_quantity" value="1000" placeholder="الحد الأقصى" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white text-center">
                 </div>
                 <select name="is_available" class="bg-gray-900 border border-gray-700 rounded-xl p-3 text-white font-bold">
                     <option value="true">حالة الخدمة: متوفرة ونشطة ✓</option>
@@ -112,7 +134,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-gray-900/60 p-3 rounded-2xl border border-gray-800">
                 <input type="text" name="provider_api_url" placeholder="رابط API المزود..." class="bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-white">
                 <input type="text" name="provider_api_key" placeholder="مفتاح API المزود (Key)..." class="bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-white">
-                <input type="text" name="provider_service_id" placeholder="رقم الخدمة لديهم (ID)..." class="bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-white">
+                <input type="text" name="provider_service_id" placeholder="رقم الخدمة لديهم (ID)..." class="bg-gray-950 border border-gray-700 rounded-xl p-3 text-white">
             </div>
             <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-xl shadow">حفظ وإضافة الخدمة للموقع ✨</button>
         </form>
@@ -123,7 +145,7 @@
         <h2 class="text-sm font-black text-amber-400 mb-4">إضافة إشعار متحرك بالشريط العلوي 📢</h2>
         <form method="POST" class="space-y-3 mb-4">
             <input type="hidden" name="action" value="add_notification">
-            <input type="text" name="title" required placeholder="عنوان الإشعار (مثال: تنبيه هام)..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+            <input type="text" name="title" required placeholder="عنوان الإشعار..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             <textarea name="message" required placeholder="نص الإشعار..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white h-16"></textarea>
             <button type="submit" class="w-full bg-amber-500 text-gray-950 font-black py-3 rounded-xl shadow">نشر الإشعار في الشريط العلوي 🚀</button>
         </form>
@@ -176,9 +198,9 @@
         <h2 class="text-sm font-black text-emerald-400 mb-4">إضافة طريقة دفع / باركود تحويل للزبائن 📷</h2>
         <form method="POST" class="space-y-3 mb-4">
             <input type="hidden" name="action" value="add_payment_method">
-            <input type="text" name="title" required placeholder="اسم طريقة الدفع (مثال: سيريتل كاش)..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
-            <input type="text" name="qr_image_url" required placeholder="رابط صورة الباركود (QR Image URL)..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
-            <textarea name="instructions" required placeholder="تعليمات التحويل (رقم الحساب والاسم)..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white h-16"></textarea>
+            <input type="text" name="title" required placeholder="اسم طريقة الدفع..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+            <input type="text" name="qr_image_url" required placeholder="رابط صورة الباركود..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
+            <textarea name="instructions" required placeholder="تعليمات التحويل..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white h-16"></textarea>
             <button type="submit" class="w-full bg-emerald-500 text-gray-950 font-black py-3 rounded-xl shadow">حفظ وإضافة الباركود 🚀</button>
         </form>
         <div class="space-y-2">
