@@ -28,7 +28,7 @@ class Service(db.Model):
     service_image_url = db.Column(db.String(500), nullable=True)
     price_usd = db.Column(db.Float, nullable=False, default=0.0)
     price_syp = db.Column(db.Float, nullable=False, default=0.0)
-    service_type = db.Column(db.String(20), default='game') # 'game', 'whatsapp_api', 'api'
+    service_type = db.Column(db.String(20), default='game')
     input_label = db.Column(db.String(100), default='معرّف الحساب (ID)')
     min_quantity = db.Column(db.Integer, default=1)
     max_quantity = db.Column(db.Integer, default=10000)
@@ -310,6 +310,22 @@ def admin_panel():
     merchants = User.query.filter_by(role='merchant').all()
     manual_orders = Order.query.filter_by(order_type='game').order_by(Order.id.desc()).all()
     return render_template('admin.html', services=services, categories=categories, deposits=deposits, notifications=notifications, payment_methods=payment_methods, accounts=accounts, merchants=merchants, manual_orders=manual_orders)
+
+@app.route('/admin/edit_service/<int:service_id>', methods=['POST'])
+def edit_service(service_id):
+    if session.get('user') != 'admin': return redirect(url_for('login'))
+    s = Service.query.get(service_id)
+    if s:
+        s.name = request.form.get('name')
+        s.price_usd = float(request.form.get('price_usd') or 0)
+        s.price_syp = s.price_usd * USD_TO_SYP
+        s.delivery_time = request.form.get('delivery_time')
+        s.min_quantity = int(request.form.get('min_quantity') or 1)
+        s.max_quantity = int(request.form.get('max_quantity') or 10000)
+        s.is_available = True if request.form.get('is_available') == 'true' else False
+        db.session.commit()
+        flash('تم تعديل الخدمة بنجاح ✏️', 'success')
+    return redirect(url_for('admin_panel'))
 
 @app.route('/admin/export_backup')
 def export_backup():

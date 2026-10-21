@@ -2,28 +2,47 @@
 {% block title %}الرئيسية والأقسام | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="bg-gradient-to-r from-cyan-900/40 via-blue-900/40 to-purple-900/40 border border-cyan-500/30 rounded-3xl p-5 text-center shadow-xl">
-        <h1 class="text-sm sm:text-base font-black text-white mb-1">مرحباً بك في منصة أوج ميديا ⚡</h1>
-        <p class="text-[11px] text-gray-300">أسرع وأضمن خدمات السوشيال ميديا وشحن الألعاب في مكان واحد.</p>
+<div class="max-w-5xl mx-auto px-4 py-4 space-y-6">
+
+    <!-- قسم الترحيب البانر -->
+    <div class="bg-gradient-to-r from-cyan-900/40 via-cardDark to-amber-900/40 border border-gray-800 rounded-2xl p-5 text-center shadow-2xl relative overflow-hidden">
+        <div class="relative z-10 space-y-2">
+            <h1 class="text-sm sm:text-lg font-black text-white">مرحباً بك في منصة أوج ميديا ⚡</h1>
+            <p class="text-[11px] sm:text-xs text-gray-300">أسرع وأضمن خدمات السوشيال ميديا وشحن الألعاب في مكان واحد.</p>
+        </div>
     </div>
 
-    <h2 class="text-xs font-black text-cyan-400">الأقسام الرئيسية:</h2>
-    <div class="grid grid-cols-2 gap-3.5">
+    <!-- عنوان الأقسام -->
+    <div class="flex items-center justify-between">
+        <h2 class="text-xs sm:text-sm font-black text-cyan-400">الأقسام الرئيسية:</h2>
+        <span class="text-[10px] text-gray-400">اختر القسم لعرض الخدمات</span>
+    </div>
+
+    <!-- شبكة الأقسام (صغيرة مربعة وأنيقة - 3 أو 4 أعمدة) -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {% for cat_name, info in categories.items() %}
-        <a href="/category/{{ cat_name }}" class="bg-cardDark border border-gray-800 hover:border-cyan-500/60 rounded-3xl p-3 shadow-2xl flex flex-col items-center text-center transition-all group overflow-hidden">
-            <div class="w-full aspect-square bg-gray-950 rounded-2xl border border-gray-800 overflow-hidden mb-3 relative">
-                <img src="{{ info.image_url or 'https://via.placeholder.com/300' }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+        <a href="{{ url_for('category_services', cat_name=cat_name) }}" class="bg-cardDark border border-gray-800 hover:border-cyan-500/50 rounded-2xl p-3 flex flex-col items-center text-center shadow-xl transition group">
+            
+            <!-- صورة القسم المربعة الصغيرة الأنيقة -->
+            <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gray-900 rounded-xl overflow-hidden mb-2 border border-gray-800 flex items-center justify-center group-hover:scale-105 transition">
+                {% if info.image_url %}
+                <img src="{{ info.image_url }}" class="w-full h-full object-cover">
+                {% else %}
+                <span class="text-2xl">📁</span>
+                {% endif %}
             </div>
-            <h3 class="text-xs sm:text-sm font-black text-white group-hover:text-cyan-400 transition-colors leading-tight mb-1">{{ cat_name }}</h3>
-            <span class="text-[10px] text-gray-400 font-bold">{{ info.count }} خدمات متاحة</span>
+
+            <!-- اسم القسم -->
+            <h3 class="text-xs font-black text-white group-hover:text-cyan-400 transition line-clamp-1 mb-1">{{ cat_name }}</h3>
+
+            <!-- عدد الخدمات -->
+            <span class="text-[10px] text-gray-400 bg-gray-900 px-2 py-0.5 rounded-full border border-gray-800">
+                {{ info.count }} خدمات متاحة
+            </span>
+
         </a>
-        {% else %}
-        <div class="col-span-full text-center py-10 bg-cardDark border border-gray-800 rounded-3xl">
-            <p class="text-xs text-gray-400">لا توجد أقسام مضافة حالياً من قبل الإدارة.</p>
-        </div>
         {% endfor %}
     </div>
+
 </div>
 {% endblock %}

@@ -1,59 +1,87 @@
 {% extends "base.html" %}
-{% block title %}شحن الرصيد | أوج ميديا{% endblock %}
+{% block title %}شحن المحفظة | أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto space-y-6 text-xs">
-    <div class="bg-cardDark border border-gray-800 rounded-3xl p-6 shadow-2xl">
-        <h2 class="text-sm font-black text-amber-400 mb-4">شحن رصيد المحفظة عبر الباركود 💳</h2>
-        
-        <div class="space-y-4 mb-6">
-            <h3 class="font-bold text-gray-300">قم بالتحويل إلى إحدى طرق الدفع التالية:</h3>
+<div class="max-w-4xl mx-auto px-4 py-4 space-y-6">
+
+    <!-- رأس الصفحة -->
+    <div class="bg-cardDark border border-gray-800 rounded-2xl p-4 flex justify-between items-center shadow-xl">
+        <h1 class="text-sm sm:text-base font-black text-cyan-400">شحن رصيد المحفظة 💳</h1>
+        <a href="/" class="bg-gray-900 hover:bg-gray-800 text-cyan-300 border border-gray-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+            ← العودة للرئيسية
+        </a>
+    </div>
+
+    <!-- معلومات وإرشادات الدفع -->
+    <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl space-y-4">
+        <h2 class="text-xs sm:text-sm font-black text-amber-400">طرق الدفع والتحويل المتاحة 📷</h2>
+        <p class="text-[11px] text-gray-300">قم بالتحويل لأحد الحسابات أو الباركودات أدناه، ثم أدخل تفاصيل عملية التحويل ورقم العملية لتتم مراجعتها وشحن رصيدك فوراً.</p>
+
+        <!-- شبكة طرق الدفع والباركودات (مساحة أكبر وعرض كامل للكارت) -->
+        <div class="grid grid-cols-1 gap-4 pt-2">
             {% for pm in payment_methods %}
-            <div class="bg-gray-900 p-4 rounded-2xl border border-gray-800 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-right">
-                <img src="{{ pm.qr_image_url }}" class="w-32 h-32 object-contain bg-white rounded-xl p-1.5 border border-gray-700 shadow-md">
-                <div class="space-y-1">
-                    <h4 class="font-black text-cyan-400 text-sm">{{ pm.title }}</h4>
-                    <p class="text-gray-300 text-xs whitespace-pre-line leading-relaxed">{{ pm.instructions }}</p>
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col items-center text-center space-y-4 shadow-inner">
+                <h3 class="text-sm font-black text-cyan-300">{{ pm.title }}</h3>
+                
+                <!-- صورة الباركود بمساحة كبيرة وواسعة جداً لتملأ المكان -->
+                <div class="w-full max-w-md h-72 sm:h-80 bg-white rounded-2xl p-3 border border-gray-700 overflow-hidden flex items-center justify-center shadow-lg">
+                    <img src="{{ pm.qr_image_url }}" class="w-full h-full object-contain">
                 </div>
+
+                <p class="text-xs text-gray-300 whitespace-pre-line leading-relaxed max-w-lg">{{ pm.instructions }}</p>
             </div>
             {% else %}
-            <p class="text-gray-500 text-center py-2">لا توجد طرق دفع مضافة حالياً.</p>
+            <p class="text-gray-500 text-center text-xs py-4">لا توجد طرق دفع مضافة حالياً من قبل الإدارة.</p>
             {% endfor %}
         </div>
+    </div>
 
-        <form method="POST" class="space-y-4 bg-gray-900/60 p-4 rounded-2xl border border-gray-800">
-            <h3 class="font-black text-white text-xs">تثبيت عملية الشحن:</h3>
+    <!-- نموذج إرسال طلب الشحن -->
+    <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
+        <h2 class="text-xs sm:text-sm font-black text-emerald-400 mb-3">تأكيد عملية الشحن والتحويل ✍️</h2>
+        
+        <form method="POST" class="space-y-3 text-xs">
             <div>
-                <label class="block font-bold text-gray-300 mb-1">المبلغ المحول ($):</label>
-                <input type="number" step="0.01" name="amount_usd" required placeholder="مثال: 10" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-white font-bold">
+                <label class="block text-[11px] text-gray-300 mb-1 font-bold">المبلغ المحول ($)</label>
+                <input type="number" step="0.01" name="amount_usd" required placeholder="مثال: 10" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             </div>
+
             <div>
-                <label class="block font-bold text-gray-300 mb-1">رقم العملية أو الحوالة (Transaction ID):</label>
-                <input type="text" name="transaction_id" required placeholder="أدخل رقم العملية الذي ظهر لك بعد التحويل..." class="w-full bg-gray-950 border border-gray-700 rounded-xl p-3 text-white font-bold">
+                <label class="block text-[11px] text-gray-300 mb-1 font-bold">رقم العملية أو كود التحويل (Transaction ID / الحوالة)</label>
+                <input type="text" name="transaction_id" required placeholder="أدخل رقم العملية أو الحوالة هنا..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white">
             </div>
-            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-950 font-black py-3.5 rounded-xl shadow-lg">إرسال طلب الشحن للمراجعة 🚀</button>
+
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3 rounded-xl shadow transition">
+                إرسال طلب الشحن للمراجعة 🚀
+            </button>
         </form>
+    </div>
 
-        <div class="mt-6 pt-6 border-t border-gray-800 space-y-3">
-            <h3 class="font-black text-gray-300">سجل طلبات الشحن الخاصة بك:</h3>
+    <!-- سجل طلبات الشحن الخاصة بالمستخدم -->
+    <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
+        <h2 class="text-xs sm:text-sm font-black text-white mb-3">سجل طلبات الشحن الخاصة بك 📋</h2>
+        <div class="space-y-2 text-xs">
             {% for d in deposits %}
-            <div class="bg-gray-900 p-3 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
+            <div class="bg-gray-900 border border-gray-800 p-3.5 rounded-2xl flex justify-between items-center">
                 <div>
-                    <span class="text-cyan-400 font-bold">المبلغ: ${{ "%.2f"|format(d.amount_usd) }}</span>
-                    <div class="text-[10px] text-gray-400">رقم العملية: {{ d.transaction_id }}</div>
+                    <div class="text-white font-bold">المبلغ: <span class="text-amber-400">${{ "%.2f"|format(d.amount_usd) }}</span></div>
+                    <div class="text-gray-400 text-[10px] mt-0.5">رقم العملية: {{ d.transaction_id }}</div>
                 </div>
                 <div>
                     {% if d.status == 'pending' %}
-                    <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-lg font-bold">قيد المراجعة</span>
+                    <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-1 rounded-xl text-[10px] font-bold">قيد المراجعة ⏳</span>
+                    {% elif d.status == 'approved' %}
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-xl text-[10px] font-bold">مقبول ومضاف ✓</span>
                     {% else %}
-                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg font-bold">تم الشحن ✓</span>
+                    <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-xl text-[10px] font-bold">مرفوض ❌</span>
                     {% endif %}
                 </div>
             </div>
             {% else %}
-            <p class="text-gray-500 text-center text-[11px]">لا توجد طلبات سابقة.</p>
+            <p class="text-gray-500 text-center py-3">ليس لديك أي طلبات شحن سابقة.</p>
             {% endfor %}
         </div>
     </div>
+
 </div>
 {% endblock %}
