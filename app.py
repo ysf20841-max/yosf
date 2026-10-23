@@ -4,11 +4,28 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change-this-secret-key-before-deployment')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///owj_media.db').replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+
+def save_uploaded_image(field_name):
+    file = request.files.get(field_name)
+    if not file or not file.filename:
+        return ''
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise ValueError('صيغة الصورة غير مدعومة. استخدم PNG أو JPG أو WEBP أو GIF.')
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    filename = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    return '/static/uploads/' + filename
 db = SQLAlchemy(app)
 
 class User(db.Model):
@@ -66,6 +83,9 @@ class VerificationRequest(db.Model):
     full_name = db.Column(db.String(120), default='')
     email = db.Column(db.String(160), default='')
     phone = db.Column(db.String(40), default='')
+    gender = db.Column(db.String(30), default='')
+    age = db.Column(db.Integer, default=0)
+    rejection_reason = db.Column(db.String(500), default='')
     status = db.Column(db.String(20), default='pending')
     user = db.relationship('User')
 
@@ -177,6 +197,33 @@ def profile():
         db.session.commit(); flash('تم تحديث بياناتك.', 'success'); return redirect(url_for('profile'))
     return render_template('profile.html', user=user)
 
+@app.route('/verification', methods=['GET', 'POST'])
+@login_required
+def verification():
+    user = current_user()
+    latest = VerificationRequest.query.filter_by(user_id=user.id).order_by(VerificationRequest.id.desc()).first()
+    if request.method == 'POST':
+        if user.is_verified:
+            flash('حسابك موثّق بالفعل.', 'success')
+            return redirect(url_for('verification'))
+        if latest and latest.status == 'pending':
+            flash('لديك طلب توثيق قيد المراجعة بالفعل.', 'error')
+            return redirect(url_for('verification'))
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        gender = request.form.get('gender', '').strip()
+        age = request.form.get('age', type=int)
+        if not email or not phone or gender not in ('ذكر', 'أنثى', 'أفضل عدم الإجابة') or age is None or age < 13 or age > 120:
+            flash('تحقق من البريد ورقم الهاتف والجنس والعمر (13 إلى 120).', 'error')
+            return redirect(url_for('verification'))
+        req = VerificationRequest(user_id=user.id, full_name=user.full_name or user.username, email=email, phone=phone, gender=gender, age=age, status='pending')
+        db.session.add(req)
+        user.email = email; user.phone = phone
+        db.session.commit()
+        flash('تم إرسال طلب التوثيق للإدارة للمراجعة.', 'success')
+        return redirect(url_for('verification'))
+    return render_template('verification.html', user=user, latest=latest)
+
 @app.route('/my_orders')
 @login_required
 def my_orders():
@@ -191,11 +238,18 @@ def place_order(service_id):
     if not service.is_available:
         flash('هذه الخدمة غير متوفرة حالياً.', 'error'); return redirect(url_for('category_services', category_id=service.category_id))
     link = request.form.get('link','').strip()
-    try: quantity = int(request.form.get('quantity', service.min_quantity or 1))
-    except ValueError: quantity = 0
-    if not link or quantity < (service.min_quantity or 1) or quantity > (service.max_quantity or 10000):
-        flash('تحقق من الرابط والكمية المطلوبة.', 'error'); return redirect(url_for('category_services', category_id=service.category_id))
-    total = (service.price_per_1000 * quantity / 1000) if service.service_type == 'smm' else service.price
+    if service.service_type == 'manual':
+        # المنتجات اليدوية مثل شحن الألعاب: سعر ثابت، دون حد أدنى أو أعلى للكمية.
+        quantity = 1
+        if not link:
+            flash('أدخل الآيدي أو البيانات المطلوبة.', 'error'); return redirect(url_for('category_services', category_id=service.category_id))
+        total = service.price
+    else:
+        try: quantity = int(request.form.get('quantity', service.min_quantity or 1))
+        except ValueError: quantity = 0
+        if not link or quantity < (service.min_quantity or 1) or quantity > (service.max_quantity or 10000):
+            flash('تحقق من الرابط والكمية المطلوبة.', 'error'); return redirect(url_for('category_services', category_id=service.category_id))
+        total = service.price_per_1000 * quantity / 1000
     if user.balance_usd < total:
         flash('رصيدك غير كافٍ. يرجى شحن المحفظة أولاً.', 'error'); return redirect(url_for('deposit'))
     user.balance_usd -= total
@@ -226,19 +280,21 @@ def about(): return render_template('about.html')
 def ai_bot(): return render_template('ai_bot.html', user_name=current_user().full_name or current_user().username)
 
 @app.route('/api/ai_chat', methods=['POST'])
-@login_required
 def ai_chat():
+    # API endpoints should return JSON errors, not redirect fetch() to an HTML login page.
+    if not session.get('user_id') or not db.session.get(User, session.get('user_id')):
+        return jsonify(reply='انتهت جلسة تسجيل الدخول. سجّل الدخول من جديد ثم جرّب المساعد.'), 401
     data = request.get_json(silent=True) or {}
     message = str(data.get('message','')).strip()[:1000]
     if not message: return jsonify(reply='اكتب سؤالك أولاً.'), 400
-    m = message.lower()
-    if any(x in m for x in ['شحن','رصيد','دفع','تحويل']):
+    m = message.lower().strip()
+    if any(x in m for x in ['شحن','رصيد','دفع','تحويل','محفظة','باركود','كاش']):
         reply = 'لشحن رصيدك افتح قسم «الشحن» من الشريط السفلي، واختر طريقة الدفع المتاحة. إذا أرسلت طلب شحن فسيظهر للإدارة للمراجعة.'
-    elif any(x in m for x in ['طلباتي','طلب','الطلبات']):
+    elif any(x in m for x in ['طلباتي','طلب','الطلبات','حالة الطلب','وين طلبي']):
         reply = 'يمكنك متابعة طلباتك من قسم «طلباتي» في الشريط السفلي. تظهر حالة كل طلب وتكلفته.'
-    elif any(x in m for x in ['خدمة','سعر','متجر','انستغرام','تيك','تيك توك']):
+    elif any(x in m for x in ['خدمة','سعر','متجر','انستغرام','انستا','تيك','تيك توك','متابع','لايك','مشاهد','يوتيوب','تلغرام','تليجرام']):
         reply = 'تصفح المتجر الرقمي لاختيار الخدمة. ستجد السعر وحالة التوفر، ويمكنك فتح القسم لمعرفة التفاصيل.'
-    elif any(x in m for x in ['مرحبا','السلام','اهلا','أهلا']):
+    elif any(x in m for x in ['مرحبا','السلام','اهلا','أهلا','هاي','هلا']):
         reply = 'أهلاً وسهلاً بك في أوج ميديا 👋 كيف أقدر أساعدك؟ اسألني عن الخدمات أو الطلبات أو الشحن.'
     else:
         reply = 'أنا مساعد أوج ميديا التجريبي. أستطيع إرشادك إلى الخدمات والطلبات والشحن. للمساعدة الخاصة، تواصل مع فريق الدعم من خلال الوكلاء المعتمدين.'
@@ -258,8 +314,13 @@ def complete_order(order_id):
 @admin_required
 def handle_verification(req_id):
     req = VerificationRequest.query.get_or_404(req_id); action=request.form.get('action')
-    if action == 'approve': req.user.is_verified=True; req.status='approved'
-    else: req.status='rejected'
+    if action == 'approve':
+        req.user.is_verified=True; req.status='approved'; req.rejection_reason=''
+    else:
+        reason=request.form.get('reject_reason','').strip()
+        if not reason:
+            flash('اكتب سبب الرفض ليظهر للمستخدم.', 'error'); return redirect(url_for('admin'))
+        req.status='rejected'; req.rejection_reason=reason
     db.session.commit(); flash('تم تحديث طلب التوثيق.', 'success'); return redirect(url_for('admin'))
 
 @app.route('/admin/send_balance', methods=['POST'])
@@ -294,11 +355,21 @@ def add_agent():
 def add_service():
     name=request.form.get('name','').strip(); category_name=request.form.get('category_name','').strip()
     if not name or not category_name: flash('أدخل اسم الخدمة والقسم.', 'error'); return redirect(url_for('admin'))
+    try:
+        category_image = save_uploaded_image('category_image_file') or request.form.get('category_image_url','').strip()
+        product_image = save_uploaded_image('image_file') or request.form.get('image_url','').strip()
+    except ValueError as exc:
+        flash(str(exc), 'error'); return redirect(url_for('admin'))
     cat=Category.query.filter_by(name=category_name).first()
-    if not cat: cat=Category(name=category_name, image_url=request.form.get('category_image_url','').strip()); db.session.add(cat); db.session.flush()
+    if not cat:
+        cat=Category(name=category_name, image_url=category_image); db.session.add(cat); db.session.flush()
+    elif category_image:
+        cat.image_url = category_image
     price=request.form.get('price_per_1000',type=float) or 0
     typ=request.form.get('service_type','manual')
-    service=Service(name=name, category_id=cat.id, price=price, price_per_1000=price, min_quantity=request.form.get('min_quantity',type=int) or 1, max_quantity=request.form.get('max_quantity',type=int) or 10000, input_label=request.form.get('input_label','الرابط أو الآيدي').strip(), service_type=typ, image_url=request.form.get('image_url','').strip(), description=request.form.get('description','').strip())
+    minimum = request.form.get('min_quantity',type=int) or 1
+    maximum = request.form.get('max_quantity',type=int) or 10000
+    service=Service(name=name, category_id=cat.id, price=price, price_per_1000=price, min_quantity=(minimum if typ == 'smm' else 1), max_quantity=(maximum if typ == 'smm' else 1), input_label=request.form.get('input_label','الرابط أو الآيدي').strip(), service_type=typ, image_url=product_image, description=request.form.get('description','').strip())
     db.session.add(service); db.session.commit(); flash('تمت إضافة الخدمة.', 'success'); return redirect(url_for('admin'))
 
 @app.route('/admin/delete_category', methods=['POST'])
@@ -326,6 +397,48 @@ def export_backup():
     for u in User.query.all(): writer.writerow([u.id,u.username,u.email,u.balance_usd,u.role])
     return Response('\ufeff'+out.getvalue(), mimetype='text/csv', headers={'Content-Disposition':'attachment; filename=owj_users_backup.csv'})
 
+@app.route('/admin/import_backup', methods=['POST'])
+@admin_required
+def import_backup():
+    import csv, io
+    file = request.files.get('backup_file')
+    if not file or not file.filename:
+        flash('اختر ملف CSV أولاً.', 'error')
+        return redirect(url_for('admin'))
+    if not file.filename.lower().endswith('.csv'):
+        flash('الملف يجب أن يكون بصيغة CSV.', 'error')
+        return redirect(url_for('admin'))
+    try:
+        raw = file.stream.read().decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(raw))
+        required = {'username', 'email', 'balance_usd', 'role'}
+        if not reader.fieldnames or not required.issubset(set(reader.fieldnames)):
+            raise ValueError('أعمدة الملف غير مطابقة للنسخة الاحتياطية المتوقعة.')
+        updated = 0
+        for row in reader:
+            username = (row.get('username') or '').strip()
+            if not username:
+                continue
+            user = User.query.filter_by(username=username).first()
+            # Restore only existing accounts; importing a CSV never creates accounts or changes passwords.
+            if not user:
+                continue
+            balance = float(row.get('balance_usd') or 0)
+            if balance < 0:
+                raise ValueError('لا يمكن استيراد رصيد سالب.')
+            user.email = (row.get('email') or '').strip()
+            user.balance_usd = balance
+            role = (row.get('role') or 'user').strip().lower()
+            if role in ('user', 'admin'):
+                user.role = role
+            updated += 1
+        db.session.commit()
+        flash(f'تم استيراد النسخة الاحتياطية وتحديث {updated} حساباً موجوداً. لم يتم إنشاء حسابات جديدة أو تغيير كلمات المرور.', 'success')
+    except Exception as exc:
+        db.session.rollback()
+        flash('تعذّر استيراد الملف: ' + str(exc), 'error')
+    return redirect(url_for('admin'))
+
 @app.route('/admin/toggle_service/<int:service_id>', methods=['POST'])
 @admin_required
 def toggle_service(service_id):
@@ -333,11 +446,26 @@ def toggle_service(service_id):
 
 with app.app_context():
     db.create_all()
-    # Seed minimal sample data and an admin only when the database is empty.
-    if not User.query.filter_by(role='admin').first():
-        admin_user=User(username=os.environ.get('OWJ_ADMIN_USER','admin'), full_name='مدير أوج ميديا', role='admin', balance_usd=0)
-        admin_user.set_password(os.environ.get('OWJ_ADMIN_PASSWORD','12345678'))
+    # Add fields to existing SQLite databases without deleting user data.
+    try:
+        columns = {row[1] for row in db.session.execute(db.text('PRAGMA table_info(verification_request)')).fetchall()}
+        for col, definition in [('gender', "VARCHAR(30) DEFAULT ''"), ('age', 'INTEGER DEFAULT 0'), ('rejection_reason', "VARCHAR(500) DEFAULT ''")]:
+            if col not in columns:
+                db.session.execute(db.text(f'ALTER TABLE verification_request ADD COLUMN {col} {definition}'))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    # Ensure the requested administrator credentials are always synchronized.
+    admin_user = User.query.filter_by(username='yosf').first()
+    if admin_user is None:
+        admin_user = User.query.filter_by(role='admin').first()
+    if admin_user is None:
+        admin_user = User(username='yosf', full_name='مدير أوج ميديا', role='admin', balance_usd=0)
         db.session.add(admin_user)
+    admin_user.username = 'yosf'
+    admin_user.full_name = admin_user.full_name or 'مدير أوج ميديا'
+    admin_user.role = 'admin'
+    admin_user.set_password('2008rrnny')
     if Category.query.count() == 0:
         c1=Category(name='خدمات التواصل الاجتماعي'); c2=Category(name='شحن الألعاب'); db.session.add_all([c1,c2]); db.session.flush()
         db.session.add_all([

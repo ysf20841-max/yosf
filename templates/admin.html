@@ -8,9 +8,15 @@
             <h1 class="text-base font-black text-white mb-1">لوحة التحكم الإدارية</h1>
             <p class="text-xs text-gray-400">إدارة الطلبات اليدوية، التوثيق، الوكلاء، والخدمات.</p>
         </div>
-        <a href="/admin/export_backup" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-4 py-2.5 rounded-2xl text-xs font-black transition shadow">
-            تصدير نسخة احتياطية (CSV)
-        </a>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <a href="/admin/export_backup" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-4 py-2.5 rounded-2xl text-xs font-black transition shadow text-center">
+                تنزيل نسخة احتياطية (CSV)
+            </a>
+            <form action="/admin/import_backup" method="POST" enctype="multipart/form-data" class="flex flex-col sm:flex-row gap-2 rounded-2xl border border-gray-700 bg-gray-950 p-2">
+                <input type="file" name="backup_file" accept=".csv,text/csv" required class="max-w-full text-[10px] text-gray-300 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-800 file:px-3 file:py-2 file:text-white">
+                <button type="submit" onclick="return confirm('سيتم تحديث بيانات الحسابات الموجودة فقط حسب ملف CSV. هل تريد المتابعة؟')" class="bg-amber-400 hover:bg-amber-300 text-gray-950 px-3 py-2 rounded-xl text-xs font-black whitespace-nowrap">استيراد / استعادة CSV</button>
+            </form>
+        </div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -63,6 +69,7 @@
                     <div class="text-[11px] text-gray-300 space-y-1">
                         <p>البريد: {{ v_req.email }}</p>
                         <p>الهاتف: {{ v_req.phone }}</p>
+                        <p>الجنس: {{ v_req.gender }} | العمر: {{ v_req.age }}</p>
                     </div>
                     <div class="flex items-center gap-2 pt-2 border-t border-gray-800">
                         <form action="/admin/handle_verification/{{ v_req.id }}" method="POST" class="flex-1">
@@ -158,12 +165,12 @@
     <!-- إضافة خدمة مع رابط صورة القسم وصورة المنتج -->
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
         <h2 class="text-sm font-black text-white">إضافة وتعديل الخدمات وتخصيص حقول الإدخال</h2>
-        <form action="/admin/add_service" method="POST" class="space-y-3">
+        <form action="/admin/add_service" method="POST" enctype="multipart/form-data" class="space-y-3">
             <input type="text" name="name" placeholder="اسم الخدمة أو المنتج" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             <input type="text" name="category_name" placeholder="القسم الرئيسي" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             
             <div class="grid grid-cols-3 gap-2">
-                <input type="number" step="0.01" name="price_per_1000" placeholder="السعر لكل 1000 ($)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
+                <input type="number" step="0.01" min="0.01" name="price_per_1000" placeholder="السعر الثابت للمنتج اليدوي / لكل 1000 للتلقائي ($)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
                 <input type="number" name="min_quantity" placeholder="الحد الأدنى" value="10" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
                 <input type="number" name="max_quantity" placeholder="الحد الأقصى" value="10000" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
             </div>
@@ -176,10 +183,16 @@
                     <option value="manual">يدوي / شحن ألعاب</option>
                     <option value="smm">تلقائي SMM (ربط API)</option>
                 </select>
+                <p class="text-[10px] leading-5 text-gray-500">اليدوي / شحن الألعاب: السعر ثابت لكل طلب ولا يحتاج كمية. التلقائي: السعر لكل 1000 مع حدود كمية.</p>
             </div>
 
-            <input type="text" name="image_url" placeholder="رابط صورة المنتج أو الخدمة..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
-            <input type="text" name="category_image_url" placeholder="رابط صورة القسم الرئيسي..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <label class="block text-xs font-bold text-gray-300">صورة المنتج / الخدمة (اختياري)</label>
+            <input type="file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white">
+            <input type="url" name="image_url" placeholder="أو رابط صورة المنتج" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <label class="block text-xs font-bold text-gray-300">صورة القسم (اختياري)</label>
+            <input type="file" name="category_image_file" accept="image/png,image/jpeg,image/webp,image/gif" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white">
+            <input type="url" name="category_image_url" placeholder="أو رابط صورة القسم" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <p class="text-[11px] text-gray-500">الصور المرفوعة: PNG أو JPG أو WEBP أو GIF، بحد أقصى 5 ميغابايت.</p>
             
             <textarea name="description" placeholder="تفاصيل الخدمة..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
             <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">حفظ وإضافة الخدمة</button>
