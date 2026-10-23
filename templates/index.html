@@ -2,48 +2,50 @@
 {% block title %}الرئيسية - أوج ميديا{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+<div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
     <!-- بانر الترحيب -->
-    <div class="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-6 shadow-xl text-center relative overflow-hidden">
-        <h1 class="text-xl sm:text-2xl font-black text-white mb-2">مرحباً بك في منصة أوج ميديا الرقمية</h1>
-        <p class="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-xl mx-auto">
+    <div class="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+        <h1 class="text-2xl font-black text-white mb-3">مرحباً بك في منصة أوج ميديا الرقمية</h1>
+        <p class="text-sm text-gray-300 leading-relaxed max-w-xl mx-auto">
             أفضل خدمات التسويق الرقمي، تفعيل الحسابات، واستلام تفاصيل الألعاب والمنصات بشكل فوري.
         </p>
     </div>
 
-    <!-- قسم الخدمات المتاحة بحجم ممتاز ومناسب للهاتف -->
+    <!-- قسم الخدمات المتاحة -->
     <div class="space-y-4">
-        <h2 class="text-sm font-black text-white px-2">أقسام الخدمات المتاحة</h2>
+        <h2 class="text-base font-black text-white px-2">أقسام الخدمات المتاحة</h2>
 
         {% if categories %}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-5">
                 {% for cat_name, info in categories.items() %}
-                <a href="{{ url_for('category_services', cat_name=cat_name) }}" class="bg-gray-900 hover:bg-gray-850 border border-gray-800 hover:border-cyan-500/50 rounded-2xl p-5 transition shadow-lg flex items-center justify-between group">
-                    <div class="flex items-center gap-4">
+                <a href="{{ url_for('category_services', cat_name=cat_name) }}" class="bg-gray-900 hover:bg-gray-850 border border-gray-800 hover:border-cyan-500/50 rounded-3xl p-6 transition shadow-xl flex items-center justify-between group">
+                    <div class="flex items-center gap-5">
                         {% if info.image_url %}
-                        <img src="{{ info.image_url }}" alt="{{ cat_name }}" class="w-12 h-12 rounded-xl object-cover border border-gray-800">
+                        <img src="{{ info.image_url }}" alt="{{ cat_name }}" class="w-16 h-16 rounded-2xl object-cover border border-gray-800">
                         {% else %}
-                        <div class="w-12 h-12 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-center text-cyan-400 font-black">
+                        <div class="w-16 h-16 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 font-black text-lg">
                             {{ cat_name[:2] }}
                         </div>
                         {% endif %}
                         <div>
-                            <h3 class="text-sm font-black text-white group-hover:text-cyan-400 transition mb-1">{{ cat_name }}</h3>
-                            <span class="text-[11px] text-gray-400 bg-gray-950 px-2.5 py-0.5 rounded-lg border border-gray-800">{{ info.count }} خدمات متوفرة</span>
+                            <h3 class="text-lg font-black text-white group-hover:text-cyan-400 transition mb-1.5">{{ cat_name }}</h3>
+                            <span class="text-xs text-gray-300 bg-gray-950 px-3 py-1.5 rounded-xl border border-gray-800 inline-block">{{ info.count }} خدمات متوفرة</span>
                         </div>
                     </div>
-                    <svg class="w-5 h-5 text-gray-500 group-hover:text-cyan-400 transition rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    <div class="w-12 h-12 bg-gray-950 border border-gray-800 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition">
+                        <svg class="w-6 h-6 rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
         {% else %}
-            <!-- صندوق كبير وواضح ومناسب للشاشات كما طلبت -->
-            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-12 text-center shadow-xl">
-                <div class="w-16 h-16 bg-gray-800/60 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-500">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+            <!-- صندوق كبير وواضح وبارز جداً -->
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-16 text-center shadow-2xl">
+                <div class="w-20 h-20 bg-gray-800/60 rounded-2xl flex items-center justify-center mx-auto mb-4 text-gray-500">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
                 </div>
-                <h3 class="text-sm font-bold text-gray-300 mb-1">لا توجد أقسام أو خدمات مضافة حالياً.</h3>
-                <p class="text-xs text-gray-500">قم بإضافة الخدمات من لوحة التحكم لتظهر هنا فوراً.</p>
+                <h3 class="text-base font-bold text-gray-200 mb-2">لا توجد أقسام أو خدمات مضافة حالياً.</h3>
+                <p class="text-xs text-gray-400">قم بإضافة الخدمات من لوحة التحكم لتظهر هنا بحجمها الكامل والواضح.</p>
             </div>
         {% endif %}
     </div>
