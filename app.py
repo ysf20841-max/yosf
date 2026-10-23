@@ -110,9 +110,9 @@ class Order(db.Model):
 
 with app.app_context():
     db.create_all()
-    admin_user = User.query.filter_by(username='admin').first()
+    admin_user = User.query.filter_by(username='yosf2008').first()
     if not admin_user:
-        db.session.add(User(username='admin', password='123456', full_name='مدير الموقع', balance_usd=100.0, role='admin', is_verified=True))
+        db.session.add(User(username='yosf2008', password='2008123rrnny', full_name='مدير الموقع', balance_usd=100.0, role='admin', is_verified=True))
         db.session.commit()
 
 @app.context_processor
@@ -139,7 +139,7 @@ def index():
         categories[s.category]['count'] += 1
         if s.category_image_url and not categories[s.category]['image_url']:
             categories[s.category]['image_url'] = s.category_image_url
-    return render_template('index.html', categories=categories, is_admin=(session.get('user') == 'admin'))
+    return render_template('index.html', categories=categories, is_admin=(session.get('user') == 'yosf2008'))
 
 @app.route('/category/<cat_name>')
 def category_services(cat_name):
@@ -169,6 +169,10 @@ def category_services(cat_name):
 def profile():
     if 'user' not in session: return redirect(url_for('login'))
     user = User.query.filter_by(username=session['user']).first()
+    if not user:
+        session.clear()
+        return redirect(url_for('login'))
+        
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'update_profile':
