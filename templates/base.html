@@ -182,7 +182,7 @@
         // تحديث الصفحة تلقائياً كل 50 ثانية (أقل من دقيقة بقليل) دون التأثير على المستخدم
         setTimeout(function(){
             location.reload();
-        }, 50000);
+        }, 300000);
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) || (e.ctrlKey && e.key === 'U')) {
