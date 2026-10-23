@@ -9,25 +9,25 @@
     </div>
 
     {% if services %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
         {% for s in services %}
-        <div class="bg-gray-900 border border-gray-800 rounded-3xl p-5 flex flex-col justify-between shadow-xl">
+        <div class="bg-gray-900 border border-gray-800 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
             <div>
                 {% if s.service_image_url %}
-                <img src="{{ s.service_image_url }}" alt="{{ s.name }}" class="w-full h-32 object-cover rounded-2xl mb-4 border border-gray-800">
+                <img src="{{ s.service_image_url }}" alt="{{ s.name }}" class="w-full h-28 sm:h-32 object-cover rounded-2xl mb-3 border border-gray-800">
                 {% endif %}
-                <h3 class="text-sm font-black text-white mb-2">{{ s.name }}</h3>
-                <div class="flex items-center justify-between text-xs text-gray-400 mb-4 bg-gray-950 px-3 py-2 rounded-xl border border-gray-800">
-                    <span>وقت التنفيذ: <span class="text-cyan-400 font-bold">{{ s.delivery_time }}</span></span>
-                    <span class="text-amber-400 font-black product-price" data-usd="{{ s.price_usd }}">${{ "%.2f"|format(s.price_usd) }}</span>
+                <h3 class="text-xs sm:text-sm font-black text-white mb-2 line-clamp-2">{{ s.name }}</h3>
+                <div class="flex flex-col gap-1 text-[11px] text-gray-400 mb-3 bg-gray-950 p-2.5 rounded-2xl border border-gray-800">
+                    <span>الوقت: <span class="text-cyan-400 font-bold">{{ s.delivery_time }}</span></span>
+                    <span class="text-amber-400 font-black text-sm product-price" data-usd="{{ s.price_usd }}">${{ "%.2f"|format(s.price_usd) }}</span>
                 </div>
             </div>
 
             <div>
                 {% if s.is_available %}
-                <button onclick="openOrderModal('{{ s.id }}', '{{ s.name }}', '{{ s.price_usd }}', '{{ s.service_type }}', '{{ s.input_label }}')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-2.5 rounded-xl text-xs transition shadow-lg">طلب الخدمة الآن</button>
+                <button onclick="openOrderModal('{{ s.id }}', '{{ s.name }}', '{{ s.price_usd }}', '{{ s.service_type }}', '{{ s.input_label }}')" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-2.5 rounded-xl text-xs transition shadow-lg">طلب الخدمة</button>
                 {% else %}
-                <button disabled class="w-full bg-gray-800 text-gray-500 font-bold py-2.5 rounded-xl text-xs cursor-not-allowed">الخدمة غير متاحة حالياً</button>
+                <button disabled class="w-full bg-gray-800 text-gray-500 font-bold py-2.5 rounded-xl text-xs cursor-not-allowed">غير متاحة</button>
                 {% endif %}
             </div>
         </div>
@@ -40,7 +40,6 @@
     {% endif %}
 </div>
 
-<!-- نافذة الطلب التفاعلية المنبثقة -->
 <div id="orderModal" class="fixed inset-0 bg-black/70 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-gray-900 border border-gray-800 rounded-3xl max-w-md w-full p-6 relative shadow-2xl">
         <button onclick="closeOrderModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white text-lg font-bold">✕</button>
@@ -51,7 +50,6 @@
             <input type="hidden" name="service_id" id="modalServiceId">
             
             <div>
-                <!-- النص التوضيحي الديناميكي حسب ما يطلبه الأدمن (رابط، ايدي، رقم هاتف...) -->
                 <label id="modalInputLabel" class="block text-xs text-gray-400 mb-1">المطلوب</label>
                 <input type="text" name="target_input" id="modalTargetInput" placeholder="أدخل المطلوب هنا..." required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
             </div>
@@ -81,14 +79,11 @@
         
         document.getElementById('modalServiceId').value = id;
         document.getElementById('modalServiceName').innerText = name;
-        
-        // تعيين التسمية المخصصة ديناميكياً للخانة
         document.getElementById('modalInputLabel').innerText = label || 'المطلوب';
         document.getElementById('modalTargetInput').placeholder = 'أدخل ' + (label || 'المطلوب') + ' هنا...';
         
         document.getElementById('modalQuantity').value = 1;
         calculateTotal();
-        
         document.getElementById('orderModal').classList.remove('hidden');
     }
 

@@ -14,7 +14,6 @@
         .light-mode .text-gray-300, .light-mode .text-gray-400 { color: #64748b !important; }
         .light-mode .text-white { color: #0f172a !important; }
         
-        /* تنسيق القائمة الجانبية للهواتف بشكل صحيح ونظيف */
         #sidebarMenu {
             position: fixed;
             top: 0;
@@ -40,7 +39,6 @@
         .side-menu-item:hover { background-color: #1e293b; color: #38bdf8; }
         .side-menu-item svg { width: 22px; height: 22px; flex-shrink: 0; }
 
-        /* تأثير الأيقونة المحددة في الشريط السفلي */
         .bottom-nav-item.active-nav {
             color: #38bdf8 !important;
         }
@@ -54,7 +52,6 @@
 
     <header class="bg-gray-900/85 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40 px-3 py-2.5">
         <div class="max-w-6xl mx-auto flex justify-between items-center">
-            
             <div class="flex items-center gap-2">
                 <button onclick="toggleSidebar()" class="p-1.5 bg-gray-950 border border-gray-800 rounded-xl text-cyan-400 hover:bg-gray-800 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -99,7 +96,6 @@
         </div>
     </header>
 
-    <!-- القائمة الجانبية -->
     <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 z-50 hidden backdrop-blur-sm transition"></div>
     <div id="sidebarMenu">
         <div>
@@ -164,7 +160,6 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- شريط التنقل السفلي للهواتف -->
     <nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur-lg border-t border-gray-800 z-40 px-4 py-2 shadow-2xl">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <a href="/profile" data-path="/profile" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
@@ -227,7 +222,6 @@
             });
         }
 
-        // تمييز الأيقونة النشطة في الشريط السفلي بناءً على الصفحة الحالية
         window.addEventListener('DOMContentLoaded', () => {
             const currentPath = window.location.pathname;
             document.querySelectorAll('.bottom-nav-item').forEach(item => {
@@ -242,146 +236,13 @@
         });
 
         const dictionary = {
-            ar: {
-                brand: "أوج ميديا",
-                admin_panel: "لوحة التحكم",
-                logout: "خروج",
-                login: "دخول",
-                menu_title: "قائمة أوج ميديا",
-                home: "الرئيسية",
-                my_profile: "حسابي الشخصي",
-                store: "المتجر الرقمي",
-                deposit: "إضافة رصيد",
-                my_orders: "طلباتي",
-                agents: "وكلاؤنا المعتمدون",
-                about: "من نحن",
-                dark_mode: "تبديل الوضع (ليلي / نهاري)",
-                nav_profile: "حسابي",
-                nav_store: "المتجر",
-                nav_home: "الرئيسية",
-                nav_deposit: "الشحن",
-                nav_orders: "طلباتي"
-            },
-            en: {
-                brand: "OWJ Media",
-                admin_panel: "Admin Panel",
-                logout: "Logout",
-                login: "Login",
-                menu_title: "OWJ Menu",
-                home: "Home",
-                my_profile: "My Profile",
-                store: "Digital Store",
-                deposit: "Add Balance",
-                my_orders: "My Orders",
-                agents: "Our Agents",
-                about: "About Us",
-                dark_mode: "Toggle Mode (Dark / Light)",
-                nav_profile: "Profile",
-                nav_store: "Store",
-                nav_home: "Home",
-                nav_deposit: "Deposit",
-                nav_orders: "Orders"
-            },
-            tr: {
-                brand: "OWJ Medya",
-                admin_panel: "Yönetici Paneli",
-                logout: "Çıkış Yap",
-                login: "Giriş Yap",
-                menu_title: "OWJ Menü",
-                home: "Ana Sayfa",
-                my_profile: "Profilim",
-                store: "Dijital Mağaza",
-                deposit: "Bakiye Ekle",
-                my_orders: "Siparişlerim",
-                agents: "Acentelerimiz",
-                about: "Hakkımızda",
-                dark_mode: "Modu Değiştir",
-                nav_profile: "Profil",
-                nav_store: "Mağaza",
-                nav_home: "Ana Sayfa",
-                nav_deposit: "Bakiye",
-                nav_orders: "Siparişler"
-            },
-            fr: {
-                brand: "OWJ Média",
-                admin_panel: "Panneau Admin",
-                logout: "Déconnexion",
-                login: "Connexion",
-                menu_title: "Menu OWJ",
-                home: "Accueil",
-                my_profile: "Mon Profil",
-                store: "Boutique Numérique",
-                deposit: "Ajouter Solde",
-                my_orders: "Mes Commandes",
-                agents: "Nos Agents",
-                about: "À Propos",
-                dark_mode: "Changer le Mode",
-                nav_profile: "Profil",
-                nav_store: "Boutique",
-                nav_home: "Accueil",
-                nav_deposit: "Dépôt",
-                nav_orders: "Commandes"
-            },
-            de: {
-                brand: "OWJ Medien",
-                admin_panel: "Admin-Panel",
-                logout: "Abmelden",
-                login: "Anmelden",
-                menu_title: "OWJ Menü",
-                home: "Startseite",
-                my_profile: "Mein Profil",
-                store: "Digitaler Shop",
-                deposit: "Guthaben Hinzufügen",
-                my_orders: "Meine Bestellungen",
-                agents: "Unsere Agenten",
-                about: "Über Uns",
-                dark_mode: "Modus Wechseln",
-                nav_profile: "Profil",
-                nav_store: "Shop",
-                nav_home: "Startseite",
-                nav_deposit: "Guthaben",
-                nav_orders: "Bestellungen"
-            },
-            es: {
-                brand: "OWJ Medios",
-                admin_panel: "Panel Admin",
-                logout: "Cerrar Sesión",
-                login: "Iniciar Sesión",
-                menu_title: "Menú OWJ",
-                home: "Inicio",
-                my_profile: "Mi Perfil",
-                store: "Tienda Digital",
-                deposit: "Añadir Saldo",
-                my_orders: "Mis Pedidos",
-                agents: "Nuestros Agentes",
-                about: "Sobre Nosotros",
-                dark_mode: "Cambiar Modo",
-                nav_profile: "Perfil",
-                nav_store: "Tienda",
-                nav_home: "Inicio",
-                nav_deposit: "Saldo",
-                nav_orders: "Pedidos"
-            },
-            ru: {
-                brand: "OWJ Медиа",
-                admin_panel: "Панель Администратора",
-                logout: "Выйти",
-                login: "Войти",
-                menu_title: "Меню OWJ",
-                home: "Главная",
-                my_profile: "Мой Профиль",
-                store: "Цифровой Магазин",
-                deposit: "Пополнить Баланс",
-                my_orders: "Мои Заказы",
-                agents: "Наши Агенты",
-                about: "О Нас",
-                dark_mode: "Сменить Режим",
-                nav_profile: "Профиль",
-                nav_store: "Магазин",
-                nav_home: "Главная",
-                nav_deposit: "Баланс",
-                nav_orders: "Заказы"
-            }
+            ar: { brand: "أوج ميديا", admin_panel: "لوحة التحكم", logout: "خروج", login: "دخول", menu_title: "قائمة أوج ميديا", home: "الرئيسية", my_profile: "حسابي الشخصي", store: "المتجر الرقمي", deposit: "إضافة رصيد", my_orders: "طلباتي", agents: "وكلاؤنا المعتمدون", about: "من نحن", dark_mode: "تبديل الوضع (ليلي / نهاري)", nav_profile: "حسابي", nav_store: "المتجر", nav_home: "الرئيسية", nav_deposit: "الشحن", nav_orders: "طلباتي" },
+            en: { brand: "OWJ Media", admin_panel: "Admin Panel", logout: "Logout", login: "Login", menu_title: "OWJ Menu", home: "Home", my_profile: "My Profile", store: "Digital Store", deposit: "Add Balance", my_orders: "My Orders", agents: "Our Agents", about: "About Us", dark_mode: "Toggle Mode (Dark / Light)", nav_profile: "Profile", nav_store: "Store", nav_home: "Home", nav_deposit: "Deposit", nav_orders: "Orders" },
+            tr: { brand: "OWJ Medya", admin_panel: "Yönetici Paneli", logout: "Çıkış Yap", login: "Giriş Yap", menu_title: "OWJ Menü", home: "Ana Sayfa", my_profile: "Profilim", store: "Dijital Mağaza", deposit: "Bakiye Ekle", my_orders: "Siparişlerim", agents: "Acentelerimiz", about: "Hakkımızda", dark_mode: "Modu Değiştir", nav_profile: "Profil", nav_store: "Mağaza", nav_home: "Ana Sayfa", nav_deposit: "Bakiye", nav_orders: "Siparişler" },
+            fr: { brand: "OWJ Média", admin_panel: "Panneau Admin", logout: "Déconnexion", login: "Connexion", menu_title: "Menu OWJ", home: "Accueil", my_profile: "Mon Profil", store: "Boutique Numérique", deposit: "Ajouter Solde", my_orders: "Mes Commandes", agents: "Nos Agents", about: "À Propos", dark_mode: "Changer le Mode", nav_profile: "Profil", nav_store: "Boutique", nav_home: "Accueil", nav_deposit: "Dépôt", nav_orders: "Commandes" },
+            de: { brand: "OWJ Medien", admin_panel: "Admin-Panel", logout: "Abmelden", login: "Anmelden", menu_title: "OWJ Menü", home: "Startseite", my_profile: "Mein Profil", store: "Digitaler Shop", deposit: "Guthaben Hinzufügen", my_orders: "Meine Bestellungen", agents: "Unsere Agenten", about: "Über Uns", dark_mode: "Modus Wechseln", nav_profile: "Profil", nav_store: "Shop", nav_home: "Startseite", nav_deposit: "Guthaben", nav_orders: "Bestellungen" },
+            es: { brand: "OWJ Medios", admin_panel: "Panel Admin", logout: "Cerrar Sesión", login: "Iniciar Sesión", menu_title: "Menú OWJ", home: "Inicio", my_profile: "Mi Perfil", store: "Tienda Digital", deposit: "Añadir Saldo", my_orders: "Mis Pedidos", agents: "Nuestros Agentes", about: "Sobre Nosotros", dark_mode: "Cambiar Modo", nav_profile: "Perfil", nav_store: "Tienda", nav_home: "Inicio", nav_deposit: "Saldo", nav_orders: "Pedidos" },
+            ru: { brand: "OWJ Медиа", admin_panel: "Панель Администратора", logout: "Выйти", login: "Войти", menu_title: "Меню OWJ", home: "Главная", my_profile: "Мой Профиль", store: "Цифровой Магазин", deposit: "Пополнить Баланс", my_orders: "Мои Заказы", agents: "Наши Агенты", about: "О Нас", dark_mode: "Сменить Режим", nav_profile: "Профиль", nav_store: "Магазин", nav_home: "Главная", nav_deposit: "Баланс", nav_orders: "Заказы" }
         };
 
         function changeLanguage(lang) {
@@ -389,7 +250,6 @@
                 document.documentElement.lang = lang;
                 document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
                 localStorage.setItem('site_lang', lang);
-                
                 document.querySelectorAll('[data-t]').forEach(el => {
                     const key = el.getAttribute('data-t');
                     if (dictionary[lang][key]) {
