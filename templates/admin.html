@@ -23,7 +23,7 @@
         {% endif %}
     {% endwith %}
 
-    <!-- الطلبات اليدوية الواردة للموقع (مع إمكانية جعلها مكتملة) -->
+    <!-- الطلبات اليدوية والواردة للموقع -->
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
         <h2 class="text-sm font-black text-white">الطلبات اليدوية والواردة للموقع</h2>
         {% if orders %}
@@ -32,7 +32,7 @@
                 <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div class="space-y-1 text-xs text-gray-300">
                         <p class="font-bold text-white">الخدمة: {{ ord.service_name }} (#{{ ord.id }})</p>
-                        <p>رابط الطلب: <a href="{{ ord.link }}" target="_blank" class="text-cyan-400 underline">{{ ord.link }}</a></p>
+                        <p>المطلوب/الرابط: <a href="{{ ord.link }}" target="_blank" class="text-cyan-400 underline">{{ ord.link }}</a></p>
                         <p>الكمية: {{ ord.quantity }} | التكلفة: ${{ "%.2f"|format(ord.total_price) }}</p>
                         <p>الحالة: <span class="px-2 py-0.5 rounded-lg text-[10px] {% if ord.status == 'مكتمل' %} bg-emerald-500/20 text-emerald-400 {% else %} bg-amber-500/20 text-amber-400 {% endif %}">{{ ord.status }}</span></p>
                     </div>
@@ -110,7 +110,7 @@
         <form action="/admin/add_payment" method="POST" class="space-y-3">
             <input type="text" name="name" placeholder="اسم طريقة الدفع..." required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             <input type="text" name="qr_code_url" placeholder="رابط صورة الباركود..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
-            <input type="text" name="account_number" placeholder="رقم الحساب أو الكود للنسخ (مثل شام كاش)..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="account_number" placeholder="رقم الحساب أو الكود للنسخ..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             <textarea name="instructions" placeholder="تعليمات التحويل..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
             <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">حفظ وإضافة طريقة الدفع</button>
         </form>
@@ -155,18 +155,25 @@
         </div>
     </div>
 
-    <!-- إضافة خدمة مع صورة ورابط المزود SMM -->
+    <!-- إضافة خدمة مع رابط صورة القسم وصورة المنتج -->
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
-        <h2 class="text-sm font-black text-white">إضافة وتعديل الخدمات وربط SMM</h2>
+        <h2 class="text-sm font-black text-white">إضافة وتعديل الخدمات وتخصيص حقول الإدخال</h2>
         <form action="/admin/add_service" method="POST" class="space-y-3">
             <input type="text" name="name" placeholder="اسم الخدمة أو المنتج" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             <input type="text" name="category_name" placeholder="القسم الرئيسي" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
-            <input type="number" step="0.01" name="price" placeholder="السعر ($)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             
+            <div class="grid grid-cols-3 gap-2">
+                <input type="number" step="0.01" name="price_per_1000" placeholder="السعر لكل 1000 ($)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
+                <input type="number" name="min_quantity" placeholder="الحد الأدنى" value="10" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
+                <input type="number" name="max_quantity" placeholder="الحد الأقصى" value="10000" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-3 py-3 text-xs text-white outline-none">
+            </div>
+
+            <input type="text" name="input_label" placeholder="النص المطلوب للعميل (مثال: ضع رابط انستغرام أو آيدي ببجي)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+
             <div class="space-y-1">
                 <label class="block text-[11px] font-bold text-gray-300">نوع الخدمة</label>
                 <select name="service_type" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
-                    <option value="manual">يدوي / شحن ألعاب (يظهر للادمن كطلب يدوي)</option>
+                    <option value="manual">يدوي / شحن ألعاب</option>
                     <option value="smm">تلقائي SMM (ربط API)</option>
                 </select>
             </div>
@@ -174,13 +181,6 @@
             <input type="text" name="image_url" placeholder="رابط صورة المنتج أو الخدمة..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             <input type="text" name="category_image_url" placeholder="رابط صورة القسم الرئيسي..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
             
-            <div class="p-3 bg-gray-950 border border-gray-800 rounded-2xl space-y-2">
-                <p class="text-[11px] font-bold text-cyan-400">بيانات ربط SMM API (اختياري للخدمات التلقائية):</p>
-                <input type="text" name="api_url" placeholder="رابط API المزود" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
-                <input type="text" name="api_key" placeholder="مفتاح API المزود (Key)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
-                <input type="text" name="provider_service_id" placeholder="رقم الخدمة لديهم (Service ID)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
-            </div>
-
             <textarea name="description" placeholder="تفاصيل الخدمة..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
             <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">حفظ وإضافة الخدمة</button>
         </form>
