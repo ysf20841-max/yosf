@@ -4,7 +4,7 @@
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-4 space-y-6">
 
-    <!-- رأس الصفحة -->
+  
     <div class="bg-cardDark border border-gray-800 rounded-2xl p-4 flex justify-between items-center shadow-xl">
         <h1 class="text-sm sm:text-base font-black text-cyan-400">شحن رصيد المحفظة 💳</h1>
         <a href="/" class="bg-gray-900 hover:bg-gray-800 text-cyan-300 border border-gray-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
@@ -12,12 +12,11 @@
         </a>
     </div>
 
-    <!-- معلومات وإرشادات الدفع -->
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl space-y-4">
         <h2 class="text-xs sm:text-sm font-black text-amber-400">طرق الدفع والتحويل المتاحة 📷</h2>
         <p class="text-[11px] text-gray-300">قم بالتحويل لأحد الحسابات أو الباركودات أدناه، ثم أدخل تفاصيل عملية التحويل ورقم العملية لتتم مراجعتها وشحن رصيدك فوراً.</p>
 
-        <!-- شبكة طرق الدفع والباركودات (مساحة أكبر وعرض كامل للكارت) -->
+       
         <div class="grid grid-cols-1 gap-4 pt-2">
             {% for pm in payment_methods %}
             <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col items-center text-center space-y-4 shadow-inner">
@@ -36,7 +35,7 @@
         </div>
     </div>
 
-    <!-- نموذج إرسال طلب الشحن -->
+    
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
         <h2 class="text-xs sm:text-sm font-black text-emerald-400 mb-3">تأكيد عملية الشحن والتحويل ✍️</h2>
         
@@ -57,7 +56,7 @@
         </form>
     </div>
 
-    <!-- سجل طلبات الشحن الخاصة بالمستخدم -->
+
     <div class="bg-cardDark border border-gray-800 rounded-3xl p-5 shadow-2xl">
         <h2 class="text-xs sm:text-sm font-black text-white mb-3">سجل طلبات الشحن الخاصة بك 📋</h2>
         <div class="space-y-2 text-xs">

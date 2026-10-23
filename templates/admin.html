@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <!-- قسم الطلبات اليدوية وتتبعها -->
+
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6 shadow-xl">
         <h2 class="text-base font-black text-white mb-4">الطلبات اليدوية والواردة للموقع</h2>
         {% if manual_orders %}
@@ -61,7 +61,7 @@
         {% endif %}
     </div>
 
-    <!-- استعادة النسخة الاحتياطية -->
+    
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-2">استعادة قاعدة البيانات والأسعار (CSV)</h2>
         <form action="/admin/restore_backup" method="POST" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
@@ -70,7 +70,7 @@
         </form>
     </div>
 
-    <!-- إضافة إشعار متحرك بالشريط العلوي -->
+  
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إضافة إشعار متحرك بالشريط العلوي</h2>
         <form method="POST" class="space-y-3">
@@ -81,7 +81,7 @@
         </form>
     </div>
 
-    <!-- إرسال رصيد هدية عبر الـ ID -->
+
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إرسال رصيد أو مكافأة عبر (ID المستخدم)</h2>
         <form method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -114,7 +114,7 @@
         </div>
     </div>
 
-    <!-- إنشاء التجار -->
+   
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إدارة حسابات التجار</h2>
         <form method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
@@ -127,7 +127,7 @@
         </form>
     </div>
 
-    <!-- طلبات التوثيق -->
+
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">طلبات توثيق الحسابات</h2>
         {% if pending_verifications %}
@@ -158,7 +158,7 @@
         {% endif %}
     </div>
 
-    <!-- إضافة طريقة دفع / باركود تحويل للزبائن -->
+    
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إضافة طريقة دفع / باركود تحويل للزبائن</h2>
         <form method="POST" class="space-y-3">
@@ -170,7 +170,7 @@
         </form>
     </div>
 
-    <!-- حذف قسم كامل أو خدمة محددة -->
+
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">حذف قسم أو خدمة</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -200,7 +200,7 @@
         </div>
     </div>
 
-    <!-- إدارة الوكلاء -->
+    
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إدارة الوكلاء المعتمدين</h2>
         <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
@@ -228,7 +228,7 @@
         </div>
     </div>
 
-    <!-- إيداعات الرصيد المعلقة -->
+
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">طلبات شحن المحفظة المعلقة</h2>
         {% if deposits %}
@@ -253,7 +253,7 @@
         {% endif %}
     </div>
 
-    <!-- إضافة وتعديل الخدمات -->
+   
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-4">إضافة وتعديل الخدمات</h2>
         <form method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
