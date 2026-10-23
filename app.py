@@ -110,9 +110,15 @@ class Order(db.Model):
 
 with app.app_context():
     db.create_all()
+    # تحديث حساب الأدمن بالبيانات الجديدة التي طلبتها
     admin_user = User.query.filter_by(username='yosf2008').first()
     if not admin_user:
-        db.session.add(User(username='yosf2008', password='2008123rrnny', full_name='مدير الموقع', balance_usd=100.0, role='admin', is_verified=True))
+        db.session.add(User(username='yosf2008', password='2008123rrnny', full_name='يوسف أغا', balance_usd=500.0, role='admin', is_verified=True))
+        db.session.commit()
+    else:
+        # التأكد من أن الحساب يملك صلاحية الأدمن واسم الحساب الصحيح
+        admin_user.role = 'admin'
+        admin_user.full_name = 'يوسف أغا'
         db.session.commit()
 
 @app.context_processor
@@ -252,7 +258,11 @@ def place_order():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    if session.get('user') != 'admin': return redirect(url_for('login'))
+    # التحقق من صلاحية يوسف أغا كأدمن
+    current_admin = User.query.filter_by(username=session.get('user')).first()
+    if not current_admin or current_admin.role != 'admin':
+        return redirect(url_for('login'))
+        
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'send_balance_by_id':
@@ -374,7 +384,8 @@ def admin_panel():
 
 @app.route('/admin/export_backup')
 def export_backup():
-    if session.get('user') != 'admin': return redirect(url_for('login'))
+    current_admin = User.query.filter_by(username=session.get('user')).first()
+    if not current_admin or current_admin.role != 'admin': return redirect(url_for('login'))
     si = io.StringIO()
     cw = csv.writer(si)
     cw.writerow(['id', 'name', 'category', 'price_usd', 'service_type', 'delivery_time'])
@@ -387,7 +398,8 @@ def export_backup():
 
 @app.route('/admin/restore_backup', methods=['POST'])
 def restore_backup():
-    if session.get('user') != 'admin': return redirect(url_for('login'))
+    current_admin = User.query.filter_by(username=session.get('user')).first()
+    if not current_admin or current_admin.role != 'admin': return redirect(url_for('login'))
     file = request.files.get('backup_file')
     if file:
         stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
