@@ -7,15 +7,47 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding-bottom: 75px; transition: background 0.3s, color 0.3s; user-select: none; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding-bottom: 85px; transition: background 0.3s, color 0.3s; user-select: none; }
         .light-mode { background-color: #f8fafc !important; color: #1e293b !important; }
         .light-mode header, .light-mode nav { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
         .light-mode .bg-gray-900, .light-mode .bg-gray-950 { background-color: #ffffff !important; color: #1e293b !important; border-color: #e2e8f0 !important; }
         .light-mode .text-gray-300, .light-mode .text-gray-400 { color: #64748b !important; }
         .light-mode .text-white { color: #0f172a !important; }
+        
+        /* تنسيق القائمة الجانبية للهواتف بشكل صحيح ونظيف */
+        #sidebarMenu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 280px;
+            max-width: 85%;
+            background-color: #030712;
+            border-left: 1px solid #1f2937;
+            z-index: 60;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-shadow: -10px 0 25px rgba(0,0,0,0.8);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #sidebarMenu.active {
+            transform: translateX(0);
+        }
         .side-menu-item { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; transition: background 0.2s; color: #e2e8f0; }
         .side-menu-item:hover { background-color: #1e293b; color: #38bdf8; }
         .side-menu-item svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+        /* تأثير الأيقونة المحددة في الشريط السفلي */
+        .bottom-nav-item.active-nav {
+            color: #38bdf8 !important;
+        }
+        .bottom-nav-item.active-nav svg {
+            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between" oncontextmenu="return false;">
@@ -31,7 +63,6 @@
             </div>
             
             <div class="flex items-center gap-2">
-                <!-- اختيار اللغات الشامل -->
                 <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-gray-950 border border-gray-800 text-gray-300 rounded-xl px-2 py-1 text-[11px] font-bold focus:outline-none">
                     <option value="ar">العربية</option>
                     <option value="en">English</option>
@@ -69,12 +100,12 @@
     </header>
 
     <!-- القائمة الجانبية -->
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm transition"></div>
-    <div id="sidebarMenu" class="fixed top-0 right-0 bottom-0 w-72 bg-gray-950 border-l border-gray-800 z-50 p-5 flex flex-col justify-between transform translate-x-full transition duration-300 shadow-2xl">
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 z-50 hidden backdrop-blur-sm transition"></div>
+    <div id="sidebarMenu">
         <div>
             <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-800">
                 <h3 class="font-black text-cyan-400 text-sm" data-t="menu_title">قائمة أوج ميديا</h3>
-                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg">✕</button>
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg font-bold">✕</button>
             </div>
             
             <nav class="flex flex-col gap-1.5">
@@ -133,29 +164,30 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- شريط التنقل السفلي للهواتف -->
     <nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur-lg border-t border-gray-800 z-40 px-4 py-2 shadow-2xl">
         <div class="max-w-md mx-auto flex items-center justify-between">
-            <a href="/profile" class="flex flex-col items-center text-gray-400 hover:text-amber-400 transition group py-1">
+            <a href="/profile" data-path="/profile" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
                 <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                <span class="text-[9px]" data-t="nav_profile">حسابي</span>
+                <span class="text-[9px] font-bold" data-t="nav_profile">حسابي</span>
             </a>
-            <a href="/accounts" class="flex flex-col items-center text-gray-400 hover:text-rose-400 transition group py-1">
+            <a href="/accounts" data-path="/accounts" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
                 <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                <span class="text-[9px]" data-t="nav_store">المتجر</span>
+                <span class="text-[9px] font-bold" data-t="nav_store">المتجر</span>
             </a>
-            <a href="/" class="flex flex-col items-center -mt-5 group">
+            <a href="/" data-path="/" class="bottom-nav-item flex flex-col items-center -mt-5 group">
                 <div class="w-12 h-12 bg-cyan-500 hover:bg-cyan-400 text-gray-950 rounded-full flex items-center justify-center shadow-lg border-4 border-gray-950 transition group-hover:scale-110">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 </div>
-                <span class="text-[9px] text-cyan-400 font-bold mt-1" data-t="nav_home">الرئيسية</span>
+                <span class="text-[9px] text-cyan-400 font-black mt-1" data-t="nav_home">الرئيسية</span>
             </a>
-            <a href="/deposit" class="flex flex-col items-center text-gray-400 hover:text-emerald-400 transition group py-1">
+            <a href="/deposit" data-path="/deposit" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
                 <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                <span class="text-[9px]" data-t="nav_deposit">الشحن</span>
+                <span class="text-[9px] font-bold" data-t="nav_deposit">الشحن</span>
             </a>
-            <a href="/my_orders" class="flex flex-col items-center text-gray-400 hover:text-blue-400 transition group py-1">
+            <a href="/my_orders" data-path="/my_orders" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
                 <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                <span class="text-[9px]" data-t="nav_orders">طلباتي</span>
+                <span class="text-[9px] font-bold" data-t="nav_orders">طلباتي</span>
             </a>
         </div>
     </nav>
@@ -171,7 +203,7 @@
         function toggleSidebar() {
             const menu = document.getElementById('sidebarMenu');
             const overlay = document.getElementById('sidebarOverlay');
-            menu.classList.toggle('translate-x-full');
+            menu.classList.toggle('active');
             overlay.classList.toggle('hidden');
         }
 
@@ -195,7 +227,20 @@
             });
         }
 
-        // قاموس الترجمة الشامل لجميع صفحات الموقع
+        // تمييز الأيقونة النشطة في الشريط السفلي بناءً على الصفحة الحالية
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                if (item.getAttribute('data-path') === currentPath) {
+                    item.classList.add('active-nav');
+                }
+            });
+
+            const savedLang = localStorage.getItem('site_lang') || 'ar';
+            document.getElementById('langSelect').value = savedLang;
+            changeLanguage(savedLang);
+        });
+
         const dictionary = {
             ar: {
                 brand: "أوج ميديا",
@@ -215,14 +260,7 @@
                 nav_store: "المتجر",
                 nav_home: "الرئيسية",
                 nav_deposit: "الشحن",
-                nav_orders: "طلباتي",
-                hero_title: "مرحباً بك في منصة أوج ميديا الرقمية",
-                hero_desc: "أفضل خدمات التسويق الرقمي، تفعيل الحسابات، واستلام تفاصيل الألعاب والمنصات بشكل فوري.",
-                btn_store: "متجر الحسابات الرقمية",
-                btn_deposit: "شحن الرصيد الفوري",
-                sections_title: "أقسام الخدمات المتاحة",
-                service_unit: "خدمة",
-                no_services: "لا توجد أقسام أو خدمات مضافة حالياً."
+                nav_orders: "طلباتي"
             },
             en: {
                 brand: "OWJ Media",
@@ -242,14 +280,7 @@
                 nav_store: "Store",
                 nav_home: "Home",
                 nav_deposit: "Deposit",
-                nav_orders: "Orders",
-                hero_title: "Welcome to OWJ Media Platform",
-                hero_desc: "Best digital marketing services, account activations, and instant delivery of gaming details.",
-                btn_store: "Digital Accounts Store",
-                btn_deposit: "Instant Deposit",
-                sections_title: "Available Service Categories",
-                service_unit: "service",
-                no_services: "No categories or services added currently."
+                nav_orders: "Orders"
             },
             tr: {
                 brand: "OWJ Medya",
@@ -269,14 +300,7 @@
                 nav_store: "Mağaza",
                 nav_home: "Ana Sayfa",
                 nav_deposit: "Bakiye",
-                nav_orders: "Siparişler",
-                hero_title: "OWJ Medya Platformuna Hoş Geldiniz",
-                hero_desc: "En iyi dijital pazarlama hizmetleri, hesap aktivasyonları ve anında oyun detayları teslimatı.",
-                btn_store: "Dijital Hesap Mağazası",
-                btn_deposit: "Anında Bakiye Yükle",
-                sections_title: "Mevcut Hizmet Kategorileri",
-                service_unit: "hizmet",
-                no_services: "Şu anda eklenen kategori veya hizmet yok."
+                nav_orders: "Siparişler"
             },
             fr: {
                 brand: "OWJ Média",
@@ -296,14 +320,7 @@
                 nav_store: "Boutique",
                 nav_home: "Accueil",
                 nav_deposit: "Dépôt",
-                nav_orders: "Commandes",
-                hero_title: "Bienvenue sur la plateforme OWJ Média",
-                hero_desc: "Meilleurs services de marketing digital, activations de comptes et livraison instantanée.",
-                btn_store: "Boutique de Comptes",
-                btn_deposit: "Dépôt Instantané",
-                sections_title: "Catégories de services disponibles",
-                service_unit: "service",
-                no_services: "Aucune catégorie ou service ajouté pour le moment."
+                nav_orders: "Commandes"
             },
             de: {
                 brand: "OWJ Medien",
@@ -323,14 +340,7 @@
                 nav_store: "Shop",
                 nav_home: "Startseite",
                 nav_deposit: "Guthaben",
-                nav_orders: "Bestellungen",
-                hero_title: "Willkommen bei der OWJ Medien Plattform",
-                hero_desc: "Beste digitale Marketingdienste, Kontoaktivierungen und sofortige Lieferung von Spieldetails.",
-                btn_store: "Digitaler Konten-Shop",
-                btn_deposit: "Sofortige Einzahlung",
-                sections_title: "Verfügbare Dienstleistungskategorien",
-                service_unit: "Dienst",
-                no_services: "Derzeit keine Kategorien oder Dienste hinzugefügt."
+                nav_orders: "Bestellungen"
             },
             es: {
                 brand: "OWJ Medios",
@@ -350,14 +360,7 @@
                 nav_store: "Tienda",
                 nav_home: "Inicio",
                 nav_deposit: "Saldo",
-                nav_orders: "Pedidos",
-                hero_title: "Bienvenido a la plataforma OWJ Medios",
-                hero_desc: "Los mejores servicios de marketing digital, activaciones de cuentas y entrega instantánea.",
-                btn_store: "Tienda de Cuentas Digitales",
-                btn_deposit: "Depósito Instantáneo",
-                sections_title: "Categorías de servicios disponibles",
-                service_unit: "servicio",
-                no_services: "No hay categorías o servicios añadidos actualmente."
+                nav_orders: "Pedidos"
             },
             ru: {
                 brand: "OWJ Медиа",
@@ -377,14 +380,7 @@
                 nav_store: "Магазин",
                 nav_home: "Главная",
                 nav_deposit: "Баланс",
-                nav_orders: "Заказы",
-                hero_title: "Добро пожаловать на платформу OWJ Медиа",
-                hero_desc: "Лучшие услуги цифрового маркетинга, активация аккаунтов и мгновенная доставка деталей.",
-                btn_store: "Магазин Цифровых Аккаунтов",
-                btn_deposit: "Мгновенное Пополнение",
-                sections_title: "Доступные категории услуг",
-                service_unit: "услуга",
-                no_services: "В настоящее время нет добавленных категорий или услуг."
+                nav_orders: "Заказы"
             }
         };
 
@@ -402,12 +398,6 @@
                 });
             }
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedLang = localStorage.getItem('site_lang') || 'ar';
-            document.getElementById('langSelect').value = savedLang;
-            changeLanguage(savedLang);
-        });
     </script>
 </body>
 </html>
