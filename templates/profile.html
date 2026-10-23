@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}حسابي الشخصي - أوج ميديا{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl mb-6">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-14 h-14 bg-cyan-500/20 text-cyan-400 font-black rounded-2xl flex items-center justify-center text-xl border border-cyan-500/30">
+                    {{ user.username[0]|upper }}
+                </div>
+                <div>
+                    <h1 class="text-base font-black text-white flex items-center gap-1.5">
+                        <span>{{ user.full_name or user.username }}</span>
+                        {% if user.is_verified %}
+                        <span class="inline-flex items-center justify-center w-4 h-4 bg-blue-500 text-white rounded-full text-[10px]">✓</span>
+                        {% endif %}
+                    </h1>
+                    <p class="text-xs text-gray-400">اسم المستخدم: <span class="text-cyan-400">@{{ user.username }}</span> | المعرّف ID: <span class="text-amber-400 font-bold">#{{ user.id }}</span></p>
+                </div>
+            </div>
+            <div class="text-left">
+                <span class="text-xs text-gray-400 block">رصيدك الحالي:</span>
+                <span class="text-amber-400 font-black text-base currency-balance" data-usd="{{ user.balance_usd }}" data-syp="{{ user.balance_syp }}">
+                    ${{ "%.2f"|format(user.balance_usd) }}
+                </span>
+            </div>
+        </div>
+
+        <h2 class="text-xs font-black text-white mb-3 uppercase tracking-wider">تعديل بيانات الحساب</h2>
+        <form method="POST" class="space-y-3 mb-6">
+            <input type="hidden" name="action" value="update_profile">
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">الاسم الكامل</label>
+                <input type="text" name="full_name" value="{{ user.full_name or '' }}" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">كلمة المرور الجديدة (اختياري)</label>
+                <input type="password" name="new_password" placeholder="اتركها فارغة إذا لم ترد التغيير" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <button type="submit" class="bg-gray-800 hover:bg-gray-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition">حفظ التعديلات</button>
+        </form>
+
+        <h2 class="text-xs font-black text-white mb-3 uppercase tracking-wider">مركز توثيق الحساب بالشارة الزرقاء</h2>
+        {% if user.is_verified %}
+        <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl text-xs text-blue-300 font-bold">
+            تهانينا! حسابك موثق رسمياً وتم تفعيل العلامة الزرقاء بجانب اسمك.
+        </div>
+        {% elif user.verification_status == 'pending' %}
+        <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-300 font-bold">
+            طلب توثيق حسابك قيد المراجعة الإدارية حالياً.
+        </div>
+        {% else %}
+        
+        <!-- صندوق إرسال الكود الرسمي -->
+        <form method="POST" class="space-y-3">
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">الاسم الكامل للتوثيق</label>
+                <input type="text" name="full_name" value="{{ user.full_name or '' }}" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">البريد الإلكتروني</label>
+                <input type="email" name="email" value="{{ user.email or '' }}" placeholder="example@gmail.com" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">رقم الهاتف السوري</label>
+                <input type="text" name="phone_syp" value="{{ user.phone_syp or '' }}" placeholder="09xxxxxxxx" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <button type="submit" name="action" value="send_code" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-2.5 rounded-xl text-xs transition">إرسال رمز التحقق الرسمي</button>
+        </form>
+
+        <!-- نافذة عرض الكود بشكل رسمي واحترافي قابل للنسخ -->
+        {% if user.verification_code %}
+        <div class="mt-6 p-5 bg-gray-950 border border-cyan-500/30 rounded-2xl text-center space-y-3 shadow-2xl">
+            <div class="border-b border-gray-800 pb-2">
+                <p class="text-[11px] font-bold text-gray-400">منصة أوج ميديا الرقمية - قسم الأمان والتوثيق الرسمي</p>
+                <p class="text-[10px] text-cyan-400 mt-0.5">رمز التحقق الخاص بحسابك:</p>
+            </div>
+            
+            <div class="flex items-center justify-center gap-3 py-2">
+                <span id="otpCodeText" class="text-2xl font-black text-amber-400 tracking-widest bg-gray-900 px-6 py-2 rounded-xl border border-gray-800 select-all">{{ user.verification_code }}</span>
+                <button onclick="copyOtpCode()" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3 py-2.5 rounded-xl text-xs font-bold transition">نسخ الرمز</button>
+            </div>
+            
+            <p class="text-[10px] text-gray-500">لا تقم بمشاركة هذا الرمز مع أي شخص حفاظاً على أمان حسابك.</p>
+        </div>
+
+        <form method="POST" class="mt-4 pt-4 border-t border-gray-800 space-y-3">
+            <div>
+                <label class="block text-[11px] text-gray-400 mb-1">أدخل رمز التحقق (OTP)</label>
+                <input type="text" name="code" placeholder="أدخل الرمز هنا" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white text-center tracking-widest font-bold">
+            </div>
+            <button type="submit" name="action" value="verify_account" class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black py-2.5 rounded-xl text-xs transition">تأكيد وإرسال الطلب للإدارة</button>
+        </form>
+        {% endif %}
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function copyOtpCode() {
+        const codeText = document.getElementById('otpCodeText').innerText;
+        navigator.clipboard.writeText(codeText).then(() => {
+            alert('تم نسخ رمز التحقق بنجاح');
+        });
+    }
+</script>
+{% endblock %}
