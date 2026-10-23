@@ -1,20 +1,31 @@
 {% extends "base.html" %}
-{% block title %}المتجر الرقمي - أوج ميديا{% endblock %}
-
+{% block title %}المتجر الرقمي{% endblock %}
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-12">
-    <div class="text-center py-16 bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl p-6">
-        <div class="w-16 h-16 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-cyan-400">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+<div class="max-w-4xl mx-auto px-3 py-4 space-y-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl py-3 px-4 text-center shadow">
+        <h1 class="text-xs font-black text-white">المتجر الرقمي والخدمات المتاحة</h1>
+    </div>
+
+    <!-- الخدمات (أصغر حجماً - 3 جنب بعض) -->
+    <div class="grid grid-cols-3 gap-2.5">
+        {% for service in services %}
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-2.5 shadow-lg flex flex-col justify-between text-center">
+            <div>
+                {% if service.image_url %}
+                <img src="{{ service.image_url }}" alt="{{ service.name }}" class="w-12 h-12 mx-auto rounded-xl object-cover border border-gray-800 mb-2">
+                {% else %}
+                <div class="w-12 h-12 mx-auto bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-center text-cyan-400 font-black text-xs mb-2">
+                    {{ service.name[:2] }}
+                </div>
+                {% endif %}
+                <h3 class="text-[11px] font-black text-white truncate mb-1">{{ service.name }}</h3>
+                <p class="text-[10px] text-cyan-400 font-bold mb-2">${{ "%.2f"|format(service.price) }}</p>
+            </div>
+            <a href="/category/{{ service.category_id }}" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-1.5 rounded-xl text-[10px] transition block">
+                طلب الخدمة
+            </a>
         </div>
-        
-        <h2 class="text-lg sm:text-xl font-black text-white mb-2">الخدمة غير متوفرة حالياً</h2>
-        <p class="text-xs sm:text-sm text-gray-400 mb-6">نعمل على تجهيز حسابات واشتراكات جديدة، ترقبوا التحديث القادم قريباً.</p>
-        
-        <a href="/" class="inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-6 py-3 rounded-2xl text-xs font-black transition shadow-lg">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            <span>الرجوع إلى الصفحة الرئيسية</span>
-        </a>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

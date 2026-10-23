@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>أوج ميديا</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; touch-action: manipulation; }
         #sidebarMenu {
             position: fixed; top: 0; right: 0; bottom: 0; width: 320px; max-width: 88%;
             background-color: #030712; border-left: 1px solid #1f2937; z-index: 60;
@@ -25,7 +25,7 @@
 
     <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- القائمة الجانبية (مع مسافات واسعة ومريحة وإضافة البوت التجريبي) -->
+    <!-- القائمة الجانبية -->
     <div id="sidebarMenu">
         <div>
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
@@ -54,13 +54,10 @@
                     <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                     <span>شحن المحفظة</span>
                 </a>
-                
-                <!-- البوت التجريبي المساعد الذكي داخل الثلاث شخوط -->
                 <a href="/ai_bot" class="flex items-center gap-4 px-4 py-3.5 bg-cyan-950/40 text-cyan-300 rounded-2xl text-xs font-bold border border-cyan-500/30">
                     <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     <span>البوت التجريبي (المساعد الذكي)</span>
                 </a>
-
                 <a href="/profile" class="flex items-center gap-4 px-4 py-3.5 bg-gray-900/90 text-gray-200 rounded-2xl text-xs font-bold border border-gray-800">
                     <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                     <span>حسابي الشخصي</span>
