@@ -2,17 +2,15 @@
 <html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="pageTitle">أوج ميديا</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding-bottom: 85px; transition: background 0.3s, color 0.3s; user-select: none; }
+        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding-bottom: 90px; transition: background 0.3s, color 0.3s; user-select: none; touch-action: manipulation; }
         .light-mode { background-color: #f8fafc !important; color: #1e293b !important; }
         .light-mode header, .light-mode nav { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
         .light-mode .bg-gray-900, .light-mode .bg-gray-950 { background-color: #ffffff !important; color: #1e293b !important; border-color: #e2e8f0 !important; }
-        .light-mode .text-gray-300, .light-mode .text-gray-400 { color: #64748b !important; }
-        .light-mode .text-white { color: #0f172a !important; }
         
         #sidebarMenu {
             position: fixed;
@@ -50,47 +48,40 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between" oncontextmenu="return false;">
 
-    <header class="bg-gray-900/85 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40 px-3 py-2.5">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
+    <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40 px-2 py-2">
+        <div class="max-w-6xl mx-auto flex justify-between items-center gap-1">
+            
+            <div class="flex items-center gap-1.5">
                 <button onclick="toggleSidebar()" class="p-1.5 bg-gray-950 border border-gray-800 rounded-xl text-cyan-400 hover:bg-gray-800 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <a href="/" class="text-xs sm:text-base font-black text-cyan-400 flex items-center gap-1.5" data-t="brand">أوج ميديا</a>
+                <a href="/" class="text-xs font-black text-cyan-400 truncate max-w-[80px]" data-t="brand">أوج ميديا</a>
             </div>
             
-            <div class="flex items-center gap-2">
-                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-gray-950 border border-gray-800 text-gray-300 rounded-xl px-2 py-1 text-[11px] font-bold focus:outline-none">
-                    <option value="ar">العربية</option>
-                    <option value="en">English</option>
-                    <option value="tr">Türkçe</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="es">Español</option>
-                    <option value="ru">Русский</option>
+            <div class="flex items-center gap-1 text-[10px]">
+                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-gray-950 border border-gray-800 text-gray-300 rounded-lg px-1.5 py-1 font-bold focus:outline-none">
+                    <option value="ar">AR</option>
+                    <option value="en">EN</option>
+                    <option value="tr">TR</option>
                 </select>
 
-                <div class="bg-gray-950 border border-gray-800 rounded-xl p-1 flex items-center gap-1 text-[10px] font-bold">
-                    <button onclick="setCurrency('USD')" id="btnUSD" class="px-2 py-0.5 rounded-lg bg-cyan-500 text-gray-950 transition">USD</button>
-                    <button onclick="setCurrency('SYP')" id="btnSYP" class="px-2 py-0.5 rounded-lg text-gray-400 transition">ليرة</button>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-0.5 flex items-center gap-0.5 font-bold">
+                    <button onclick="setCurrency('USD')" id="btnUSD" class="px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition">USD</button>
+                    <button onclick="setCurrency('SYP')" id="btnSYP" class="px-1.5 py-0.5 rounded text-gray-400 transition">ليرة</button>
                 </div>
 
                 {% if current_user %}
-                <div class="flex items-center gap-1.5 bg-gray-950 border border-gray-800 px-2.5 py-1 rounded-xl text-[11px]">
-                    <span class="text-gray-300 font-bold hidden sm:inline">{{ current_user.username }}</span>
-                    {% if current_user.is_verified %}
-                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-blue-500 text-white rounded-full text-[9px]">✓</span>
-                    {% endif %}
-                    <span class="text-amber-400 font-black currency-balance" data-usd="{{ current_user.balance_usd }}" data-syp="{{ current_user.balance_syp }}">
+                <div class="bg-gray-950 border border-gray-800 px-2 py-1 rounded-lg flex items-center gap-1">
+                    <span class="text-amber-400 font-black currency-balance text-[10px]" data-usd="{{ current_user.balance_usd }}" data-syp="{{ current_user.balance_syp }}">
                         ${{ "%.2f"|format(current_user.balance_usd) }}
                     </span>
                 </div>
                 {% if current_user.role == 'admin' %}
-                <a href="/admin" class="bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-1 rounded-xl text-[10px] font-bold" data-t="admin_panel">لوحة التحكم</a>
+                <a href="/admin" class="bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-1 rounded-lg font-bold" data-t="admin_panel">لوحة</a>
                 {% endif %}
-                <a href="/logout" class="bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2 py-1 rounded-xl text-[10px] font-bold" data-t="logout">خروج</a>
+                <a href="/logout" class="bg-rose-500/20 text-rose-400 border border-rose-500/40 px-1.5 py-1 rounded-lg font-bold" data-t="logout">خروج</a>
                 {% else %}
-                <a href="/login" class="bg-cyan-500 text-gray-950 px-2.5 py-1 rounded-xl text-[11px] font-black" data-t="login">دخول</a>
+                <a href="/login" class="bg-cyan-500 text-gray-950 px-2.5 py-1 rounded-lg font-black" data-t="login">دخول</a>
                 {% endif %}
             </div>
         </div>
@@ -210,8 +201,8 @@
         const USD_RATE = 150.0;
         function setCurrency(curr) {
             currentCurrency = curr;
-            document.getElementById('btnUSD').className = curr === 'USD' ? 'px-2 py-0.5 rounded-lg bg-cyan-500 text-gray-950 transition' : 'px-2.5 py-0.5 rounded-lg text-gray-400 transition';
-            document.getElementById('btnSYP').className = curr === 'SYP' ? 'px-2 py-0.5 rounded-lg bg-cyan-500 text-gray-950 transition' : 'px-2.5 py-0.5 rounded-lg text-gray-400 transition';
+            document.getElementById('btnUSD').className = curr === 'USD' ? 'px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition' : 'px-1.5 py-0.5 rounded text-gray-400 transition';
+            document.getElementById('btnSYP').className = curr === 'SYP' ? 'px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition' : 'px-1.5 py-0.5 rounded text-gray-400 transition';
             document.querySelectorAll('.product-price').forEach(el => {
                 let usd = parseFloat(el.getAttribute('data-usd'));
                 el.innerText = curr === 'SYP' ? (usd * USD_RATE).toLocaleString() + ' ل.س' : '$' + usd.toFixed(2);
@@ -236,13 +227,9 @@
         });
 
         const dictionary = {
-            ar: { brand: "أوج ميديا", admin_panel: "لوحة التحكم", logout: "خروج", login: "دخول", menu_title: "قائمة أوج ميديا", home: "الرئيسية", my_profile: "حسابي الشخصي", store: "المتجر الرقمي", deposit: "إضافة رصيد", my_orders: "طلباتي", agents: "وكلاؤنا المعتمدون", about: "من نحن", dark_mode: "تبديل الوضع (ليلي / نهاري)", nav_profile: "حسابي", nav_store: "المتجر", nav_home: "الرئيسية", nav_deposit: "الشحن", nav_orders: "طلباتي" },
-            en: { brand: "OWJ Media", admin_panel: "Admin Panel", logout: "Logout", login: "Login", menu_title: "OWJ Menu", home: "Home", my_profile: "My Profile", store: "Digital Store", deposit: "Add Balance", my_orders: "My Orders", agents: "Our Agents", about: "About Us", dark_mode: "Toggle Mode (Dark / Light)", nav_profile: "Profile", nav_store: "Store", nav_home: "Home", nav_deposit: "Deposit", nav_orders: "Orders" },
-            tr: { brand: "OWJ Medya", admin_panel: "Yönetici Paneli", logout: "Çıkış Yap", login: "Giriş Yap", menu_title: "OWJ Menü", home: "Ana Sayfa", my_profile: "Profilim", store: "Dijital Mağaza", deposit: "Bakiye Ekle", my_orders: "Siparişlerim", agents: "Acentelerimiz", about: "Hakkımızda", dark_mode: "Modu Değiştir", nav_profile: "Profil", nav_store: "Mağaza", nav_home: "Ana Sayfa", nav_deposit: "Bakiye", nav_orders: "Siparişler" },
-            fr: { brand: "OWJ Média", admin_panel: "Panneau Admin", logout: "Déconnexion", login: "Connexion", menu_title: "Menu OWJ", home: "Accueil", my_profile: "Mon Profil", store: "Boutique Numérique", deposit: "Ajouter Solde", my_orders: "Mes Commandes", agents: "Nos Agents", about: "À Propos", dark_mode: "Changer le Mode", nav_profile: "Profil", nav_store: "Boutique", nav_home: "Accueil", nav_deposit: "Dépôt", nav_orders: "Commandes" },
-            de: { brand: "OWJ Medien", admin_panel: "Admin-Panel", logout: "Abmelden", login: "Anmelden", menu_title: "OWJ Menü", home: "Startseite", my_profile: "Mein Profil", store: "Digitaler Shop", deposit: "Guthaben Hinzufügen", my_orders: "Meine Bestellungen", agents: "Unsere Agenten", about: "Über Uns", dark_mode: "Modus Wechseln", nav_profile: "Profil", nav_store: "Shop", nav_home: "Startseite", nav_deposit: "Guthaben", nav_orders: "Bestellungen" },
-            es: { brand: "OWJ Medios", admin_panel: "Panel Admin", logout: "Cerrar Sesión", login: "Iniciar Sesión", menu_title: "Menú OWJ", home: "Inicio", my_profile: "Mi Perfil", store: "Tienda Digital", deposit: "Añadir Saldo", my_orders: "Mis Pedidos", agents: "Nuestros Agentes", about: "Sobre Nosotros", dark_mode: "Cambiar Modo", nav_profile: "Perfil", nav_store: "Tienda", nav_home: "Inicio", nav_deposit: "Saldo", nav_orders: "Pedidos" },
-            ru: { brand: "OWJ Медиа", admin_panel: "Панель Администратора", logout: "Выйти", login: "Войти", menu_title: "Меню OWJ", home: "Главная", my_profile: "Мой Профиль", store: "Цифровой Магазин", deposit: "Пополнить Баланс", my_orders: "Мои Заказы", agents: "Наши Агенты", about: "О Нас", dark_mode: "Сменить Режим", nav_profile: "Профиль", nav_store: "Магазин", nav_home: "Главная", nav_deposit: "Баланс", nav_orders: "Заказы" }
+            ar: { brand: "أوج ميديا", admin_panel: "لوحة", logout: "خروج", login: "دخول", menu_title: "قائمة أوج ميديا", home: "الرئيسية", my_profile: "حسابي الشخصي", store: "المتجر الرقمي", deposit: "إضافة رصيد", my_orders: "طلباتي", agents: "وكلاؤنا المعتمدون", about: "من نحن", dark_mode: "تبديل الوضع (ليلي / نهاري)", nav_profile: "حسابي", nav_store: "المتجر", nav_home: "الرئيسية", nav_deposit: "الشحن", nav_orders: "طلباتي" },
+            en: { brand: "OWJ Media", admin_panel: "Admin", logout: "Logout", login: "Login", menu_title: "OWJ Menu", home: "Home", my_profile: "My Profile", store: "Digital Store", deposit: "Add Balance", my_orders: "My Orders", agents: "Our Agents", about: "About Us", dark_mode: "Toggle Mode (Dark / Light)", nav_profile: "Profile", nav_store: "Store", nav_home: "Home", nav_deposit: "Deposit", nav_orders: "Orders" },
+            tr: { brand: "OWJ Medya", admin_panel: "Yönetim", logout: "Çıkış", login: "Giriş", menu_title: "OWJ Menü", home: "Ana Sayfa", my_profile: "Profilim", store: "Mağaza", deposit: "Bakiye", my_orders: "Siparişler", agents: "Acenteler", about: "Hakkımızda", dark_mode: "Mod Değiştir", nav_profile: "Profil", nav_store: "Mağaza", nav_home: "Ana Sayfa", nav_deposit: "Bakiye", nav_orders: "Sipariş" }
         };
 
         function changeLanguage(lang) {

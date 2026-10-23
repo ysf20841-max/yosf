@@ -10,6 +10,57 @@
         </div>
     </div>
 
+    <!-- قسم الطلبات اليدوية وتتبعها -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6 shadow-xl">
+        <h2 class="text-base font-black text-white mb-4">الطلبات اليدوية والواردة للموقع</h2>
+        {% if manual_orders %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs text-gray-300">
+                <thead class="bg-gray-950 text-cyan-400">
+                    <tr>
+                        <th class="p-3">رقم الطلب</th>
+                        <th class="p-3">المستخدم</th>
+                        <th class="p-3">الخدمة</th>
+                        <th class="p-3">المطلوب (ID / الرابط)</th>
+                        <th class="p-3">الكمية والمبلغ</th>
+                        <th class="p-3">الحالة</th>
+                        <th class="p-3">إجراء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ord in manual_orders %}
+                    <tr class="border-b border-gray-800 hover:bg-gray-950/50 transition">
+                        <td class="p-3 font-bold text-amber-400">#{{ ord.id }}</td>
+                        <td class="p-3 font-bold text-white">{{ ord.username }}</td>
+                        <td class="p-3">{{ ord.service_name }}</td>
+                        <td class="p-3 text-cyan-300 font-mono select-all">{{ ord.target_input }}</td>
+                        <td class="p-3">الكمية: {{ ord.quantity }} | <span class="text-emerald-400">${{ "%.2f"|format(ord.total_usd) }}</span></td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded-lg text-[10px] font-bold {% if 'تم' in ord.status or 'مقبول' in ord.status %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% else %}bg-amber-500/20 text-amber-300 border border-amber-500/40{% endif %}">
+                                {{ ord.status }}
+                            </span>
+                        </td>
+                        <td class="p-3">
+                            {% if 'قيد' in ord.status or 'الإرسال' in ord.status %}
+                            <form method="POST">
+                                <input type="hidden" name="action" value="complete_manual_order">
+                                <input type="hidden" name="order_id" value="{{ ord.id }}">
+                                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3 py-1.5 rounded-xl text-xs font-bold transition">إتمام التنفيذ</button>
+                            </form>
+                            {% else %}
+                            <span class="text-gray-500 text-[11px]">مكتمل</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-xs text-gray-400">لا توجد طلبات واردة حالياً.</p>
+        {% endif %}
+    </div>
+
     <!-- استعادة النسخة الاحتياطية -->
     <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
         <h2 class="text-base font-black text-white mb-2">استعادة قاعدة البيانات والأسعار (CSV)</h2>
@@ -213,7 +264,6 @@
             
             <input type="text" name="delivery_time" placeholder="وقت التسليم (فوري / 10 دقائق)" value="فوري" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
             
-            <!-- حقل كتابة المطلوب للزبون (رابط، معرّف ID، رقم هاتف...) -->
             <input type="text" name="input_label" placeholder="المطلوب من الزبون (رابط، ID، هاتف...)" value="معرّف الحساب (ID)" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
             
             <select name="service_type" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
@@ -230,31 +280,6 @@
             
             <button type="submit" class="sm:col-span-3 bg-cyan-500 text-gray-950 font-black py-2.5 rounded-xl text-xs">حفظ وإضافة الخدمة للموقع</button>
         </form>
-
-        <div class="space-y-4">
-            {% for s in services %}
-            <form action="/admin/edit_service/{{ s.id }}" method="POST" class="bg-gray-950 border border-gray-800 p-4 rounded-2xl grid grid-cols-1 sm:grid-cols-5 gap-3 items-center">
-                <div>
-                    <input type="text" name="name" value="{{ s.name }}" class="bg-gray-900 border border-gray-800 rounded-lg px-2 py-1 text-xs text-white w-full">
-                </div>
-                <div>
-                    <input type="number" step="0.01" name="price_usd" value="{{ s.price_usd }}" class="bg-gray-900 border border-gray-800 rounded-lg px-2 py-1 text-xs text-amber-400 font-bold w-full">
-                </div>
-                <div>
-                    <input type="text" name="delivery_time" value="{{ s.delivery_time }}" placeholder="وقت التسليم" class="bg-gray-900 border border-gray-800 rounded-lg px-2 py-1 text-xs text-white w-full">
-                </div>
-                <div>
-                    <select name="is_available" class="bg-gray-900 border border-gray-800 rounded-lg px-2 py-1 text-xs text-white w-full">
-                        <option value="true" {% if s.is_available %}selected{% endif %}>متاحة</option>
-                        <option value="false" {% if not s.is_available %}selected{% endif %}>معطلة</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 justify-end">
-                    <button type="submit" class="bg-cyan-500 text-gray-950 px-3 py-1.5 rounded-lg text-xs font-bold">تعديل</button>
-                </div>
-            </form>
-            {% endfor %}
-        </div>
     </div>
 </div>
 {% endblock %}
