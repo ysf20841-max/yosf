@@ -61,6 +61,7 @@ class PaymentMethod(db.Model):
     __tablename__ = 'payment_methods'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
+    account_number = db.Column(db.String(150), nullable=True)
     instructions = db.Column(db.Text, nullable=True)
     qr_image_url = db.Column(db.String(500), nullable=False)
 
@@ -110,13 +111,11 @@ class Order(db.Model):
 
 with app.app_context():
     db.create_all()
-    # تحديث حساب الأدمن بالبيانات الجديدة التي طلبتها
     admin_user = User.query.filter_by(username='yosf2008').first()
     if not admin_user:
         db.session.add(User(username='yosf2008', password='2008123rrnny', full_name='يوسف أغا', balance_usd=500.0, role='admin', is_verified=True))
         db.session.commit()
     else:
-        # التأكد من أن الحساب يملك صلاحية الأدمن واسم الحساب الصحيح
         admin_user.role = 'admin'
         admin_user.full_name = 'يوسف أغا'
         db.session.commit()
@@ -258,7 +257,6 @@ def place_order():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin_panel():
-    # التحقق من صلاحية يوسف أغا كأدمن
     current_admin = User.query.filter_by(username=session.get('user')).first()
     if not current_admin or current_admin.role != 'admin':
         return redirect(url_for('login'))
@@ -349,7 +347,7 @@ def admin_panel():
             db.session.commit()
             flash('تم حذف القسم بنجاح', 'success')
         elif action == 'add_payment_method':
-            db.session.add(PaymentMethod(title=request.form.get('title'), qr_image_url=request.form.get('qr_image_url'), instructions=request.form.get('instructions')))
+            db.session.add(PaymentMethod(title=request.form.get('title'), account_number=request.form.get('account_number'), qr_image_url=request.form.get('qr_image_url'), instructions=request.form.get('instructions')))
             db.session.commit()
             flash('تم إضافة طريقة الدفع بنجاح', 'success')
         elif action == 'add_notification':
@@ -382,60 +380,57 @@ def admin_panel():
     manual_orders = Order.query.order_by(Order.id.desc()).all()
     return render_template('admin.html', services=services, categories=categories, deposits=deposits, pending_verifications=pending_verifications, agents=agents, all_users=all_users, merchants=merchants, manual_orders=manual_orders)
 
-@app.route('/admin/export_backup')
-def export_backup():
-    current_admin = User.query.filter_by(username=session.get('user')).first()
-    if not current_admin or current_admin.role != 'admin': return redirect(url_for('login'))
-    si = io.StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['id', 'name', 'category', 'price_usd', 'service_type', 'delivery_time'])
-    for s in Service.query.all():
-        cw.writerow([s.id, s.name, s.category, s.price_usd, s.service_type, s.delivery_time])
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = "attachment; filename=owj_media_backup.csv"
-    output.headers["Content-type"] = "text/csv"
-    return output
-
-@app.route('/admin/restore_backup', methods=['POST'])
-def restore_backup():
-    current_admin = User.query.filter_by(username=session.get('user')).first()
-    if not current_admin or current_admin.role != 'admin': return redirect(url_for('login'))
-    file = request.files.get('backup_file')
-    if file:
-        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
-        csv_input = csv.reader(stream)
-        next(csv_input, None)
-        for row in csv_input:
-            if len(row) >= 4:
-                s = Service.query.get(row[0])
-                if s:
-                    s.price_usd = float(row[3])
-                    s.price_syp = float(row[3]) * USD_TO_SYP
-        db.session.commit()
-        flash('تم استعادة وتحديث البيانات بنجاح', 'success')
-    return redirect(url_for('admin_panel'))
-
 @app.route('/accounts')
 def accounts_store():
-    accounts = AccountItem.query.filter_by(is_sold=False).all()
-    my_purchased = []
+    return render_template('accounts.html')
+
+@app.route('/ai_bot')
+def ai_bot():
+    current_user_name = "زريق" # قيمة افتراضية للضيف
     if session.get('user'):
-        my_purchased = AccountItem.query.filter_by(buyer_username=session['user'], is_sold=True).all()
-    return render_template('accounts.html', accounts=accounts, my_purchased=my_purchased)
+        u = User.query.filter_by(username=session.get('user')).first()
+        if u and u.full_name:
+            current_user_name = u.full_name
+        elif u:
+            current_user_name = u.username
+    return render_template('ai_bot.html', user_name=current_user_name)
 
-@app.route('/buy_account/<int:acc_id>', methods=['POST'])
-def buy_account(acc_id):
-    if 'user' not in session: return redirect(url_for('login'))
-    acc = AccountItem.query.get(acc_id)
-    user = User.query.filter_by(username=session['user']).first()
-    if acc and not acc.is_sold and user and user.balance_usd >= acc.price_usd:
-        user.balance_usd -= acc.price_usd
-        user.balance_syp = user.balance_usd * USD_TO_SYP
-        acc.is_sold = True
-        acc.buyer_username = user.username
-        db.session.commit()
-    return redirect(url_for('accounts_store'))
+@app.route('/api/ai_chat', methods=['POST'])
+def ai_chat():
+    data = request.get_json() or {}
+    user_msg = data.get('message', '').strip()
+    user_msg_lower = user_msg.lower()
+    
+    # جلب اسم المستخدم الحالي للترحيب به
+    current_user_name = "صديقي"
+    if session.get('user'):
+        u = User.query.filter_by(username=session.get('user')).first()
+        if u and u.full_name:
+            current_user_name = u.full_name
+        elif u:
+            current_user_name = u.username
 
+    action_button = None
+    response_msg = ""
+    
+    # التحقق من الأسئلة المختلفة والرد عليها بدقة واحترافية
+    if any(k in user_msg_lower for k in ['من صنعك', 'صانعك', 'مطورك', 'مين صنعو', 'المبرمج', 'يوسف أغا', 'مالك', 'من أنت']):
+        response_msg = f"أهلاً بك يا {current_user_name}! تم تصميم وتطوير منصة **أوج ميديا (OWJ Media)** بكل احترافية بواسطة المبرمج والمدير الإبداعي **يوسف أغا** لتكون المنصة الأولى للخدمات الرقمية وشحن الألعاب."
+    elif any(k in user_msg_lower for k in ['تواصل', 'رقم', 'اتصال', 'دعم', 'فريق', 'مراسلة', 'واتساب']):
+        response_msg = f"يسعدنا تواصلك معنا يا {current_user_name}! يمكنك التواصل مباشرة مع المدير **يوسف أغا** عبر رقم الواتساب الرسمي: **+963952169815** أو عبر قنوات الدعم داخل المنصة."
+    elif any(k in user_msg_lower for k in ['شحن', 'رصيد', 'دفع', 'شام كاش', 'سيريتل كاش', 'محفظة', 'كيف أشحن']):
+        response_msg = f"عملية شحن الرصيد يا {current_user_name} سهلة جداً: انتقل إلى صفحة (شحن المحفظة)، انسخ رقم الحساب الخاص بطريقة الدفع (مثل شام كاش)، ثم أدخل مبلغ التحويل ورقم الإيصال ليتم الاعتماد فوراً."
+    elif any(k in user_msg_lower for k in ['خدمات', 'سوشيال', 'ألعاب', 'ببجي', 'انستغرام', 'تيك توك', 'اسعار', 'سعر', 'ميزات', 'ماذا يوجد', 'قسم']):
+        response_msg = f"نقدم في **أوج ميديا** أرقى خدمات السوشيال ميديا وشحن الألعاب بأسعار منافسة وسرعة فائقة في التنفيذ، مع خصومات حصرية لحسابات التجار. يمكنك تصفح جميع الأقسام والخدمات المتوفرة مباشرة عبر الزر أدناه:"
+        action_button = {"text": "اضغط هنا لعرض الخدمات والانتقال للمتجر", "url": "/#"}
+    elif any(k in user_msg_lower for k in ['كيف حالك', 'مرحبا', 'اهلاً', 'السلام عليكم']):
+        response_msg = f"وعليكم السلام ورحمة الله يا {current_user_name}! أنا بخير ولله الحمد، ومستعد تماماً لمساعدتك في أي استفسار يخص منصة أوج ميديا، الخدمات، أو حتى الأسئلة البرمجية والتقنية. بماذا يمكنني أن أخدمك اليوم؟"
+    else:
+        # رد ذكي وعام وشامل لأي استفسار آخر يكتبه المستخدم
+        response_msg = f"أهلاً بك يا {current_user_name}. بصفتي مساعدك الذكي في منصة أوج ميديا، أستطيع مساعدتك في كل ما يتعلق بإدارة حسابك، شحن الرصيد، معرفة تفاصيل الخدمات، أو الإجابة على استفساراتك التقنية والتسويقية. تفضل بطرح سؤالك وسأجيبك فوراً بكل تفصيل!"
+
+    return {'reply': response_msg, 'action_button': action_button}
+    
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None

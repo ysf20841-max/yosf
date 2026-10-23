@@ -1,11 +1,10 @@
-     <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title id="pageTitle">أوج ميديا</title>
     
-    <!-- الأسطر المضافة للـ SEO -->
     <meta name="description" content="أوج ميديا - المنصة الرائدة للخدمات الرقمية، SMM، شحن الألعاب، والمتجر الرقمي المتكامل.">
     <meta name="keywords" content="أوج ميديا, OWJ Media, SMM panel, خدمات سوشيال ميديا, شحن العاب, يوسف أغا, تسويق رقمي">
     <meta name="author" content="يوسف أغا - OWJ Media">
@@ -16,248 +15,143 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; padding-bottom: 90px; transition: background 0.3s, color 0.3s; user-select: none; touch-action: manipulation; }
-        .light-mode { background-color: #f8fafc !important; color: #1e293b !important; }
-        .light-mode header, .light-mode nav { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
-        .light-mode .bg-gray-900, .light-mode .bg-gray-950 { background-color: #ffffff !important; color: #1e293b !important; border-color: #e2e8f0 !important; }
-        
+        body { font-family: 'Cairo', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
         #sidebarMenu {
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            width: 280px;
-            max-width: 85%;
-            background-color: #030712;
-            border-left: 1px solid #1f2937;
-            z-index: 60;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-shadow: -10px 0 25px rgba(0,0,0,0.8);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
+            position: fixed; top: 0; right: 0; bottom: 0; width: 280px; max-width: 85%;
+            background-color: #030712; border-left: 1px solid #1f2937; z-index: 60;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 20px;
+            box-shadow: -10px 0 25px rgba(0,0,0,0.8); transform: translateX(100%); transition: transform 0.3s ease-in-out;
         }
-        #sidebarMenu.active {
-            transform: translateX(0);
+        #sidebarMenu.open { transform: translateX(0); }
+        #sidebarOverlay {
+            position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); z-index: 50;
+            display: none; backdrop-filter: blur(4px);
         }
-        .side-menu-item { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; transition: background 0.2s; color: #e2e8f0; }
-        .side-menu-item:hover { background-color: #1e293b; color: #38bdf8; }
-        .side-menu-item svg { width: 22px; height: 22px; flex-shrink: 0; }
-
-        .bottom-nav-item.active-nav {
-            color: #38bdf8 !important;
-        }
-        .bottom-nav-item.active-nav svg {
-            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
-            transform: scale(1.1);
-        }
+        #sidebarOverlay.open { display: block; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between" oncontextmenu="return false;">
+<body class="min-h-screen flex flex-col justify-between pb-20">
 
-    <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40 px-2 py-2">
-        <div class="max-w-6xl mx-auto flex justify-between items-center gap-1">
-            
-            <div class="flex items-center gap-1.5">
-                <button onclick="toggleSidebar()" class="p-1.5 bg-gray-950 border border-gray-800 rounded-xl text-cyan-400 hover:bg-gray-800 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- القائمة الجانبية (3 شخوط) -->
+    <div id="sidebarMenu">
+        <div>
+            <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-center text-cyan-400 font-black">OWJ</div>
+                    <div>
+                        <h3 class="text-sm font-black text-white">أوج ميديا</h3>
+                        <p class="text-[10px] text-gray-400">الخدمات الرقمية المتكاملة</p>
+                    </div>
+                </div>
+                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
-                <a href="/" class="text-xs font-black text-cyan-400 truncate max-w-[80px]" data-t="brand">أوج ميديا</a>
             </div>
-            
-            <div class="flex items-center gap-1 text-[10px]">
-                <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-gray-950 border border-gray-800 text-gray-300 rounded-lg px-1.5 py-1 font-bold focus:outline-none">
-                    <option value="ar">AR</option>
-                    <option value="en">EN</option>
-                    <option value="tr">TR</option>
-                </select>
 
-                <div class="bg-gray-950 border border-gray-800 rounded-lg p-0.5 flex items-center gap-0.5 font-bold">
-                    <button onclick="setCurrency('USD')" id="btnUSD" class="px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition">USD</button>
-                    <button onclick="setCurrency('SYP')" id="btnSYP" class="px-1.5 py-0.5 rounded text-gray-400 transition">ليرة</button>
-                </div>
+            <div class="space-y-2">
+                <a href="/" class="flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 text-gray-200 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span>الرئيسية</span>
+                </a>
+                <a href="/accounts" class="flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 text-gray-200 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span>المتجر الرقمي</span>
+                </a>
+                <a href="/deposit" class="flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 text-gray-200 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                    <span>شحن المحفظة</span>
+                </a>
+                <a href="/agents" class="flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 text-gray-200 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <span>الوكلاء المعتمدون</span>
+                </a>
+                <a href="/about" class="flex items-center gap-3 px-4 py-3 bg-gray-900 hover:bg-gray-800 text-gray-200 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>من نحن</span>
+                </a>
+                <a href="/ai_bot" class="flex items-center gap-3 px-4 py-3 bg-cyan-950/40 hover:bg-cyan-900/40 border border-cyan-500/30 text-cyan-300 rounded-xl text-xs font-bold transition">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    <span>المساعد الذكي (اسأل البوت)</span>
+                </a>
+            </div>
+        </div>
 
+        <div class="pt-4 border-t border-gray-800 text-center">
+            <p class="text-[10px] text-gray-500">© 2026 أوج ميديا - جميع الحقوق محفوظة</p>
+        </div>
+    </div>
+
+    <!-- رأس الصفحة الأساسي -->
+    <header class="bg-gray-900/80 border-b border-gray-800 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="text-gray-300 hover:text-white p-1.5 bg-gray-800/80 rounded-xl border border-gray-700/50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+                <a href="/" class="flex items-center gap-2">
+                    <span class="text-sm font-black text-white">أوج ميديا</span>
+                </a>
+            </div>
+
+            <div class="flex items-center gap-2">
                 {% if current_user %}
-                <div class="bg-gray-950 border border-gray-800 px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span class="text-amber-400 font-black currency-balance text-[10px]" data-usd="{{ current_user.balance_usd }}" data-syp="{{ current_user.balance_syp }}">
-                        ${{ "%.2f"|format(current_user.balance_usd) }}
-                    </span>
-                </div>
+                <a href="/deposit" class="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-3 py-1 rounded-xl text-xs font-black transition hover:bg-cyan-500/20">${{ "%.2f"|format(current_user.balance_usd) }}</a>
                 {% if current_user.role == 'admin' %}
-                <a href="/admin" class="bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-1 rounded-lg font-bold" data-t="admin_panel">لوحة</a>
+                <a href="/admin" class="bg-amber-500 hover:bg-amber-400 text-gray-950 px-3 py-1 rounded-xl text-xs font-black transition">لوحة التحكم</a>
                 {% endif %}
-                <a href="/logout" class="bg-rose-500/20 text-rose-400 border border-rose-500/40 px-1.5 py-1 rounded-lg font-bold" data-t="logout">خروج</a>
+                <a href="/logout" class="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2.5 py-1 rounded-xl text-xs font-bold transition">خروج</a>
                 {% else %}
-                <a href="/login" class="bg-cyan-500 text-gray-950 px-2.5 py-1 rounded-lg font-black" data-t="login">دخول</a>
+                <a href="/login" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3.5 py-1.5 rounded-xl text-xs font-black transition">دخول</a>
                 {% endif %}
             </div>
         </div>
     </header>
 
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 z-50 hidden backdrop-blur-sm transition"></div>
-    <div id="sidebarMenu">
-        <div>
-            <div class="flex justify-between items-center mb-6 pb-3 border-b border-gray-800">
-                <h3 class="font-black text-cyan-400 text-sm" data-t="menu_title">قائمة أوج ميديا</h3>
-                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-lg font-bold">✕</button>
-            </div>
-            
-            <nav class="flex flex-col gap-1.5">
-                <a href="/" class="side-menu-item">
-                    <span data-t="home">الرئيسية</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                </a>
-                <a href="/profile" class="side-menu-item">
-                    <span data-t="my_profile">حسابي الشخصي</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </a>
-                <a href="/accounts" class="side-menu-item">
-                    <span data-t="store">المتجر الرقمي</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                </a>
-                <a href="/deposit" class="side-menu-item">
-                    <span data-t="deposit">إضافة رصيد</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </a>
-                <a href="/my_orders" class="side-menu-item">
-                    <span data-t="my_orders">طلباتي</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                </a>
-                <a href="/agents" class="side-menu-item">
-                    <span data-t="agents">وكلاؤنا المعتمدون</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </a>
-                <a href="/about" class="side-menu-item">
-                    <span data-t="about">من نحن</span>
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </a>
-            </nav>
-        </div>
-
-        <div class="pt-4 border-t border-gray-800">
-            <button onclick="toggleDarkMode()" class="w-full py-2.5 bg-gray-900 hover:bg-gray-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 text-cyan-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                <span data-t="dark_mode">تبديل الوضع (ليلي / نهاري)</span>
-            </button>
-        </div>
-    </div>
-
-    <div class="max-w-4xl mx-auto px-4 mt-4 w-full">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="p-3 mb-2 rounded-2xl text-xs font-bold {% if category == 'error' %}bg-rose-500/20 text-rose-300 border border-rose-500/40{% else %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
-
-    <main class="flex-grow">
+    <main class="flex-1">
         {% block content %}{% endblock %}
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 backdrop-blur-lg border-t border-gray-800 z-40 px-4 py-2 shadow-2xl">
-        <div class="max-w-md mx-auto flex items-center justify-between">
-            <a href="/profile" data-path="/profile" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
-                <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                <span class="text-[9px] font-bold" data-t="nav_profile">حسابي</span>
+    <!-- شريط التنقل السفلي -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-950/95 border-t border-gray-800/80 backdrop-blur-lg z-40 py-2 px-4">
+        <div class="max-w-md mx-auto flex items-center justify-around text-center">
+            <a href="/my_orders" class="flex flex-col items-center gap-1 text-gray-400 hover:text-cyan-400 transition text-[10px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                <span>طلباتي</span>
             </a>
-            <a href="/accounts" data-path="/accounts" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
-                <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                <span class="text-[9px] font-bold" data-t="nav_store">المتجر</span>
+            <a href="/deposit" class="flex flex-col items-center gap-1 text-gray-400 hover:text-cyan-400 transition text-[10px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                <span>الشحن</span>
             </a>
-            <a href="/" data-path="/" class="bottom-nav-item flex flex-col items-center -mt-5 group">
-                <div class="w-12 h-12 bg-cyan-500 hover:bg-cyan-400 text-gray-950 rounded-full flex items-center justify-center shadow-lg border-4 border-gray-950 transition group-hover:scale-110">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <a href="/" class="flex flex-col items-center gap-1 text-cyan-400 transition text-[10px]">
+                <div class="w-10 h-10 -mt-5 bg-cyan-500 rounded-full flex items-center justify-center text-gray-950 shadow-lg border-4 border-[#0b0f19]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 </div>
-                <span class="text-[9px] text-cyan-400 font-black mt-1" data-t="nav_home">الرئيسية</span>
+                <span class="font-bold">الرئيسية</span>
             </a>
-            <a href="/deposit" data-path="/deposit" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
-                <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                <span class="text-[9px] font-bold" data-t="nav_deposit">الشحن</span>
+            <a href="/accounts" class="flex flex-col items-center gap-1 text-gray-400 hover:text-cyan-400 transition text-[10px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <span>المتجر</span>
             </a>
-            <a href="/my_orders" data-path="/my_orders" class="bottom-nav-item flex flex-col items-center text-gray-400 hover:text-cyan-400 transition group py-1">
-                <svg class="w-5 h-5 mb-1 group-hover:scale-110 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                <span class="text-[9px] font-bold" data-t="nav_orders">طلباتي</span>
+            <a href="/profile" class="flex flex-col items-center gap-1 text-gray-400 hover:text-cyan-400 transition text-[10px]">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span>حسابي</span>
             </a>
         </div>
     </nav>
 
     <script>
-        setTimeout(function(){
-            location.reload();
-        }, 300000);
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) || (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
         function toggleSidebar() {
             const menu = document.getElementById('sidebarMenu');
             const overlay = document.getElementById('sidebarOverlay');
-            menu.classList.toggle('active');
-            overlay.classList.toggle('hidden');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('open');
         }
 
-        function toggleDarkMode() {
-            document.getElementById('htmlRoot').classList.toggle('light-mode');
-        }
-
-        let currentCurrency = 'USD';
-        const USD_RATE = 150.0;
-        function setCurrency(curr) {
-            currentCurrency = curr;
-            document.getElementById('btnUSD').className = curr === 'USD' ? 'px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition' : 'px-1.5 py-0.5 rounded text-gray-400 transition';
-            document.getElementById('btnSYP').className = curr === 'SYP' ? 'px-1.5 py-0.5 rounded bg-cyan-500 text-gray-950 transition' : 'px-1.5 py-0.5 rounded text-gray-400 transition';
-            document.querySelectorAll('.product-price').forEach(el => {
-                let usd = parseFloat(el.getAttribute('data-usd'));
-                el.innerText = curr === 'SYP' ? (usd * USD_RATE).toLocaleString() + ' ل.س' : '$' + usd.toFixed(2);
-            });
-            document.querySelectorAll('.currency-balance').forEach(el => {
-                let usd = parseFloat(el.getAttribute('data-usd'));
-                el.innerText = curr === 'SYP' ? (usd * USD_RATE).toLocaleString() + ' ل.س' : '$' + usd.toFixed(2);
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.bottom-nav-item').forEach(item => {
-                if (item.getAttribute('data-path') === currentPath) {
-                    item.classList.add('active-nav');
-                }
-            });
-
-            const savedLang = localStorage.getItem('site_lang') || 'ar';
-            document.getElementById('langSelect').value = savedLang;
-            changeLanguage(savedLang);
-        });
-
-        const dictionary = {
-            ar: { brand: "أوج ميديا", admin_panel: "لوحة", logout: "خروج", login: "دخول", menu_title: "قائمة أوج ميديا", home: "الرئيسية", my_profile: "حسابي الشخصي", store: "المتجر الرقمي", deposit: "إضافة رصيد", my_orders: "طلباتي", agents: "وكلاؤنا المعتمدون", about: "من نحن", dark_mode: "تبديل الوضع (ليلي / نهاري)", nav_profile: "حسابي", nav_store: "المتجر", nav_home: "الرئيسية", nav_deposit: "الشحن", nav_orders: "طلباتي" },
-            en: { brand: "OWJ Media", admin_panel: "Admin", logout: "Logout", login: "Login", menu_title: "OWJ Menu", home: "Home", my_profile: "My Profile", store: "Digital Store", deposit: "Add Balance", my_orders: "My Orders", agents: "Our Agents", about: "About Us", dark_mode: "Toggle Mode (Dark / Light)", nav_profile: "Profile", nav_store: "Store", nav_home: "Home", nav_deposit: "Deposit", nav_orders: "Orders" },
-            tr: { brand: "OWJ Medya", admin_panel: "Yönetim", logout: "Çıkış", login: "Giriş", menu_title: "OWJ Menü", home: "Ana Sayfa", my_profile: "Profilim", store: "Mağaza", deposit: "Bakiye", my_orders: "Siparişler", agents: "Acenteler", about: "Hakkımızda", dark_mode: "Mod Değiştir", nav_profile: "Profil", nav_store: "Mağaza", nav_home: "Ana Sayfa", nav_deposit: "Bakiye", nav_orders: "Sipariş" }
-        };
-
-        function changeLanguage(lang) {
-            if (dictionary[lang]) {
-                document.documentElement.lang = lang;
-                document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
-                localStorage.setItem('site_lang', lang);
-                document.querySelectorAll('[data-t]').forEach(el => {
-                    const key = el.getAttribute('data-t');
-                    if (dictionary[lang][key]) {
-                        el.innerText = dictionary[lang][key];
-                    }
-                });
-            }
-        }
+        setTimeout(function(){
+            location.reload();
+        }, 300000);
     </script>
 </body>
 </html>
