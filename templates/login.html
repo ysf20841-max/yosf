@@ -1,33 +1,47 @@
 {% extends "base.html" %}
-{% block title %}تسجيل الدخول - أوج ميديا{% endblock %}
+{% block title %}تسجيل الدخول{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto px-4 py-16">
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl">
-        <h1 class="text-xl font-black text-white mb-2 text-center" data-t="login_title">تسجيل الدخول</h1>
-        <p class="text-xs text-gray-400 mb-6 text-center" data-t="login_desc">مرحباً بك مجدداً في منصة أوج ميديا</p>
-
-        {% if error %}
-        <div class="p-3 mb-4 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 text-center">
-            {{ error }}
+<div class="max-w-md mx-auto px-4 py-12">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        
+        <div class="text-center space-y-2">
+            <h1 class="text-xl font-black text-white">تسجيل الدخول إلى أوج ميديا</h1>
+            <p class="text-xs text-gray-400">أدخل بيانات حسابك للمتابعة</p>
         </div>
-        {% endif %}
 
-        <form method="POST" class="space-y-4">
+        <!-- رسائل التنبيه والخطأ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="p-4 rounded-2xl text-xs font-bold {% if category == 'success' %} bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 {% else %} bg-rose-500/10 text-rose-400 border border-rose-500/30 {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- نموذج تسجيل الدخول -->
+        <form action="/login" method="POST" class="space-y-4">
             <div>
-                <label class="block text-xs text-gray-400 mb-1" data-t="username_label">اسم المستخدم</label>
-                <input type="text" name="username" placeholder="أدخل اسم المستخدم..." required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                <label class="block text-xs font-bold text-gray-300 mb-1">اسم المستخدم</label>
+                <input type="text" name="username" required placeholder="أدخل اسم المستخدم..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white focus:border-cyan-500 outline-none transition">
             </div>
+
             <div>
-                <label class="block text-xs text-gray-400 mb-1" data-t="password_label">كلمة المرور</label>
-                <input type="password" name="password" placeholder="••••••••" required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                <label class="block text-xs font-bold text-gray-300 mb-1">كلمة المرور</label>
+                <input type="password" name="password" required placeholder="••••••••" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white focus:border-cyan-500 outline-none transition">
             </div>
-            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3 rounded-xl text-xs transition shadow-lg" data-t="login_btn">تسجيل الدخول</button>
+
+            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3.5 rounded-2xl text-xs transition shadow-lg shadow-cyan-500/20">
+                تسجيل الدخول
+            </button>
         </form>
 
-        <p class="text-center text-xs text-gray-400 mt-6">
-            <span data-t="no_account_text">ليس لديك حساب؟</span> <a href="/register" class="text-cyan-400 font-bold hover:underline" data-t="register_link">أنشئ حساباً جديداً</a>
-        </p>
+        <div class="text-center pt-2 border-t border-gray-800">
+            <p class="text-xs text-gray-400">ليس لديك حساب؟ <a href="/register" class="text-cyan-400 font-bold hover:underline">انشئ حساباً جديداً</a></p>
+        </div>
+
     </div>
 </div>
 {% endblock %}

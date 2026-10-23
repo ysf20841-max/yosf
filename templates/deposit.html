@@ -1,98 +1,21 @@
 {% extends "base.html" %}
-{% block title %}شحن الرصيد - أوج ميديا{% endblock %}
-
+{% block title %}شحن المحفظة{% endblock %}
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl mb-8">
-        <h2 class="text-lg font-black text-white mb-2 text-center">شحن رصيد المحفظة</h2>
-        <p class="text-xs text-gray-400 text-center mb-6">قم بالتحويل عبر إحدى طرق الدفع أدناه ثم أدخل رقم عملية التحويل لتأكيد الإيداع.</p>
-
-        <!-- طرق الدفع والباركود -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {% if payment_methods %}
-                {% for method in payment_methods %}
-                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 text-center">
-                    <h3 class="text-cyan-400 font-bold text-sm mb-3">{{ method.title }}</h3>
-                    
-                    {% if method.qr_image_url %}
-                    <div class="flex justify-center mb-3">
-                        <img src="{{ method.qr_image_url }}" alt="QR Code" class="w-36 h-36 object-contain rounded-xl border border-gray-800 p-2 bg-white">
-                    </div>
-                    {% endif %}
-
-           
-                    {% if method.account_number %}
-                    <div class="flex items-center justify-between gap-2 mb-3 bg-gray-900 p-2.5 rounded-xl border border-gray-800">
-                        <span id="accNum_{{ method.id }}" class="text-cyan-300 text-xs font-mono select-all truncate">{{ method.account_number }}</span>
-                        <button type="button" onclick="copyToClipboard('accNum_{{ method.id }}')" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3 py-1.5 rounded-lg text-xs font-black transition shrink-0">
-                            نسخ رمز الشام كاش
-                        </button>
-                    </div>
-                    {% endif %}
-
-                    <p class="text-gray-400 text-xs leading-relaxed">{{ method.instructions }}</p>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-span-2 text-center py-8 text-gray-400 text-xs bg-gray-950 rounded-2xl border border-gray-800">
-                    لا توجد طرق دفع متاحة حالياً، يرجى التواصل مع الإدارة.
-                </div>
-            {% endif %}
-        </div>
-
-      
-        <form method="POST" class="bg-gray-950 border border-gray-800 rounded-2xl p-5 space-y-4">
-            <h3 class="text-xs font-black text-white mb-2">تأكيد عملية التحويل</h3>
-            <div>
-                <label class="block text-gray-400 text-xs mb-1">المبلغ المحول ($ USD):</label>
-                <input type="number" step="0.01" name="amount_usd" required placeholder="مثال: 10" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-cyan-500">
-            </div>
-            <div>
-                <label class="block text-gray-400 text-xs mb-1">رقم عملية التحويل (Transaction ID):</label>
-                <input type="text" name="transaction_id" required placeholder="أدخل رقم الحوالة أو الإيصال هنا..." class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-cyan-500">
-            </div>
-            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-3 rounded-xl text-xs transition shadow-lg">
-                إرسال طلب الشحن للمراجعة
-            </button>
-        </form>
+<div class="max-w-lg mx-auto px-4 py-6 space-y-6">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl text-center space-y-2">
+        <h1 class="text-lg font-black text-white">شحن رصيد المحفظة</h1>
+        <p class="text-xs text-gray-400">اختر طريقة الدفع المناسبة وتواصل لشحن رصيدك الفوري</p>
     </div>
 
-    <!-- سجل الطلبات السابقة للمستخدم -->
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-2xl">
-        <h3 class="text-sm font-black text-white mb-4">سجل طلبات الشحن الخاصة بك</h3>
-        <div class="space-y-3">
-            {% if deposits %}
-                {% for dep in deposits %}
-                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 flex items-center justify-between">
-                    <div>
-                        <div class="text-white text-xs font-bold mb-1">المبلغ: ${{ dep.amount_usd }}</div>
-                        <div class="text-gray-400 text-[10px]">رقم الإيصال: {{ dep.transaction_id }}</div>
-                    </div>
-                    <div>
-                        {% if dep.status == 'approved' %}
-                            <span class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-xl text-[10px] font-bold">تمت الموافقة</span>
-                        {% else %}
-                            <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-xl text-[10px] font-bold">قيد المراجعة</span>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-center text-gray-500 text-xs py-4">لا توجد طلبات شحن سابقة.</p>
-            {% endif %}
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">طرق الدفع والتحويل المعتمدة</h2>
+        <div class="space-y-4">
+            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 space-y-2">
+                <h3 class="text-xs font-bold text-cyan-400">تحويل عبر الوكلاء أو الحسابات الرسمية</h3>
+                <p class="text-xs text-gray-300">يمكنك تحويل المبلغ المطلوب إلى أحد وكلائنا المعتمدين وإرسال إيصال التحويل لتتم إضافة الرصيد إلى حسابك مباشرة.</p>
+                <a href="/agents" class="inline-block bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black px-4 py-2 rounded-xl text-xs transition">عرض الوكلاء المعتمدين</a>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-function copyToClipboard(elementId) {
-    const textElement = document.getElementById(elementId);
-    const textToCopy = textElement.innerText;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        alert('تم نسخ الرمز بنجاح: ' + textToCopy);
-    }).catch(err => {
-        console.error('فشل النسخ', err);
-    });
-}
-</script>
 {% endblock %}

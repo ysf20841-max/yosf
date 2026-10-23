@@ -1,99 +1,49 @@
 {% extends "base.html" %}
-{% block title %}المساعد الذكي - أوج ميديا{% endblock %}
-
+{% block title %}المساعد الذكي{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto px-3 py-3 flex flex-col h-[calc(100vh-130px)] relative">
-    
-    <!-- هيدر الشات الثابت بالأعلى -->
-    <div class="bg-gray-900 border border-gray-800 p-3 rounded-2xl mb-3 flex items-center justify-between shadow-md shrink-0">
-        <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-center text-cyan-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-            </div>
-            <div>
-                <h2 class="text-xs font-black text-white">المساعد الذكي - أوج ميديا</h2>
-                <span class="text-[10px] text-cyan-400">● أهلاً بك يا {{ user_name }}، متصل الآن</span>
-            </div>
-        </div>
-        <a href="/" class="text-gray-400 hover:text-white text-[11px] bg-gray-800 px-3 py-1 rounded-xl transition">الرئيسية</a>
+<div class="max-w-lg mx-auto px-4 py-6 space-y-4">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl text-center space-y-2">
+        <h1 class="text-base font-black text-white">المساعد الذكي لأوج ميديا</h1>
+        <p class="text-xs text-gray-400">اسأل عن الخدمات، الأسعار، أو طريقة الشحن وسيجيبك النظام فوراً</p>
     </div>
 
-    <!-- صندوق الرسائل القابل للتمرير -->
-    <div id="chatBox" class="flex-1 overflow-y-auto bg-gray-900/40 border border-gray-800/80 rounded-2xl p-3 space-y-3 mb-20">
-        <!-- رسالة ترحيبية مخصصة -->
-        <div class="flex items-start gap-2">
-            <div class="w-7 h-7 rounded-xl bg-cyan-500 text-gray-950 flex items-center justify-center font-black text-[10px] shrink-0">OWJ</div>
-            <div class="bg-gray-900 border border-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed max-w-[88%] shadow">
-                أهلاً بك يا <b>{{ user_name }}</b> في منصة <b>أوج ميديا</b>! أنا مساعدك الذكي الاحترافي. اسألني عن أي شي تريده (خدماتنا، الأسعار، أو من هو مديرنا يوسف أغا)، وأنا جاهز للإجابة فوراً!
-            </div>
+    <!-- صندوق المحادثة بارتفاع ثابت وتمرير تلقائي للأسفل -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl h-80 overflow-y-auto space-y-3 flex flex-col" id="chatBox">
+        <div class="bg-gray-950 border border-gray-800 p-3 rounded-2xl text-xs text-gray-200 max-w-[85%]">
+            أهلاً بك يا {{ user_name }}! كيف يمكنني مساعدتك اليوم في منصة أوج ميديا؟
         </div>
     </div>
 
-    <!-- حقل الإدخال الثابت فوق شريط التنقل السفلي مباشرة -->
-    <div class="fixed bottom-16 left-3 right-3 max-w-2xl mx-auto bg-gray-950 border border-cyan-500/40 p-2 rounded-2xl flex items-center gap-2 shadow-2xl z-30 backdrop-blur-md">
-        <input type="text" id="userInput" placeholder="اكتب سؤالك هنا (مثلاً: ما هي خدماتكم؟)..." class="flex-1 bg-gray-900 border border-gray-800 text-white text-xs px-3 py-3 rounded-xl focus:outline-none focus:border-cyan-500">
-        <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-4 py-3 rounded-xl text-xs font-black transition flex items-center gap-1 shadow shrink-0">
-            <span>إرسال</span>
-            <svg class="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-        </button>
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-3 flex gap-2">
+        <input type="text" id="userInput" placeholder="اكتب رسالتك هنا..." class="flex-1 bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+        <button onclick="sendMessage()" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black px-5 rounded-2xl text-xs transition">إرسال</button>
     </div>
 </div>
 
 <script>
-async function sendMessage() {
-    const input = document.getElementById('userInput');
-    const chatBox = document.getElementById('chatBox');
-    const text = input.value.trim();
-    if (!text) return;
-
-    // إرسال رسالة المستخدم
-    chatBox.innerHTML += `
-        <div class="flex items-start gap-2 justify-end">
-            <div class="bg-cyan-600 text-white p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed max-w-[88%] shadow">${text}</div>
-            <div class="w-7 h-7 rounded-xl bg-gray-800 text-cyan-400 flex items-center justify-center font-black text-[10px] shrink-0">أنت</div>
-        </div>
-    `;
-    input.value = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // طلب الرد من الخادم
-    try {
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const box = document.getElementById('chatBox');
+        if(!input.value.trim()) return;
+        
+        const userText = input.value;
+        box.innerHTML += `<div class="bg-cyan-950 border border-cyan-500/30 p-3 rounded-2xl text-xs text-cyan-200 max-w-[85%] ml-auto">${userText}</div>`;
+        input.value = '';
+        
+        // التمرير للأسفل فور إرسال رسالة المستخدم
+        box.scrollTop = box.scrollHeight;
+        
         const res = await fetch('/api/ai_chat', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: text})
+            body: JSON.stringify({message: userText})
         });
         const data = await res.json();
-
-        let buttonHtml = '';
-        if (data.action_button) {
-            buttonHtml = `
-                <div class="mt-3">
-                    <a href="${data.action_button.url}" class="inline-flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3.5 py-2 rounded-xl text-[11px] font-black transition shadow">
-                        <span>${data.action_button.text}</span>
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                </div>
-            `;
-        }
-
-        chatBox.innerHTML += `
-            <div class="flex items-start gap-2">
-                <div class="w-7 h-7 rounded-xl bg-cyan-500 text-gray-950 flex items-center justify-center font-black text-[10px] shrink-0">OWJ</div>
-                <div class="bg-gray-900 border border-gray-800 text-gray-200 p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed max-w-[88%] shadow">
-                    ${data.reply}
-                    ${buttonHtml}
-                </div>
-            </div>
-        `;
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } catch (e) {
-        console.error(e);
+        
+        box.innerHTML += `<div class="bg-gray-950 border border-gray-800 p-3 rounded-2xl text-xs text-gray-200 max-w-[85%]">${data.reply}</div>`;
+        
+        // التمرير التلقائي للأسفل فور وصول رد البوت لتبقى الشاشة ثابتة في الأسفل
+        box.scrollTop = box.scrollHeight;
     }
-}
-
-document.getElementById('userInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') sendMessage();
-});
 </script>
 {% endblock %}

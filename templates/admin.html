@@ -1,289 +1,190 @@
 {% extends "base.html" %}
-{% block title %}لوحة التحكم الشاملة - أوج ميديا{% endblock %}
-
+{% block title %}لوحة التحكم الإدارية{% endblock %}
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-xl font-black text-white">لوحة التحكم الإدارية</h1>
-        <div class="flex gap-2">
-            <a href="/admin/export_backup" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3 py-2 rounded-xl text-xs font-black">تصدير نسخة احتياطية (CSV)</a>
-        </div>
-    </div>
-
-
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6 shadow-xl">
-        <h2 class="text-base font-black text-white mb-4">الطلبات اليدوية والواردة للموقع</h2>
-        {% if manual_orders %}
-        <div class="overflow-x-auto">
-            <table class="w-full text-right text-xs text-gray-300">
-                <thead class="bg-gray-950 text-cyan-400">
-                    <tr>
-                        <th class="p-3">رقم الطلب</th>
-                        <th class="p-3">المستخدم</th>
-                        <th class="p-3">الخدمة</th>
-                        <th class="p-3">المطلوب (ID / الرابط)</th>
-                        <th class="p-3">الكمية والمبلغ</th>
-                        <th class="p-3">الحالة</th>
-                        <th class="p-3">إجراء</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ord in manual_orders %}
-                    <tr class="border-b border-gray-800 hover:bg-gray-950/50 transition">
-                        <td class="p-3 font-bold text-amber-400">#{{ ord.id }}</td>
-                        <td class="p-3 font-bold text-white">{{ ord.username }}</td>
-                        <td class="p-3">{{ ord.service_name }}</td>
-                        <td class="p-3 text-cyan-300 font-mono select-all">{{ ord.target_input }}</td>
-                        <td class="p-3">الكمية: {{ ord.quantity }} | <span class="text-emerald-400">${{ "%.2f"|format(ord.total_usd) }}</span></td>
-                        <td class="p-3">
-                            <span class="px-2 py-1 rounded-lg text-[10px] font-bold {% if 'تم' in ord.status or 'مقبول' in ord.status %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/40{% else %}bg-amber-500/20 text-amber-300 border border-amber-500/40{% endif %}">
-                                {{ ord.status }}
-                            </span>
-                        </td>
-                        <td class="p-3">
-                            {% if 'قيد' in ord.status or 'الإرسال' in ord.status %}
-                            <form method="POST">
-                                <input type="hidden" name="action" value="complete_manual_order">
-                                <input type="hidden" name="order_id" value="{{ ord.id }}">
-                                <button type="submit" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-3 py-1.5 rounded-xl text-xs font-bold transition">إتمام التنفيذ</button>
-                            </form>
-                            {% else %}
-                            <span class="text-gray-500 text-[11px]">مكتمل</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-xs text-gray-400">لا توجد طلبات واردة حالياً.</p>
-        {% endif %}
-    </div>
-
+<div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
     
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-2">استعادة قاعدة البيانات والأسعار (CSV)</h2>
-        <form action="/admin/restore_backup" method="POST" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">
-            <input type="file" name="backup_file" accept=".csv" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button type="submit" class="bg-amber-500 hover:bg-amber-400 text-gray-950 font-black px-4 py-2 rounded-xl text-xs">استعادة وتحديث البيانات</button>
-        </form>
-    </div>
-
-  
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إضافة إشعار متحرك بالشريط العلوي</h2>
-        <form method="POST" class="space-y-3">
-            <input type="hidden" name="action" value="add_notification">
-            <input type="text" name="title" placeholder="عنوان الإشعار..." required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <textarea name="message" placeholder="نص الإشعار..." required rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white"></textarea>
-            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-950 font-black py-2.5 rounded-xl text-xs">نشر الإشعار في الشريط العلوي</button>
-        </form>
-    </div>
-
-
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إرسال رصيد أو مكافأة عبر (ID المستخدم)</h2>
-        <form method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <input type="hidden" name="action" value="send_balance_by_id">
-            <input type="number" name="target_id" placeholder="ID المستخدم" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="number" step="0.01" name="amount" placeholder="المبلغ ($)" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="notice_msg" placeholder="نص الإشعار" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button type="submit" class="sm:col-span-3 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black py-2.5 rounded-xl text-xs">إرسال الرصيد وإشعار التنبيه</button>
-        </form>
-
-        <div class="overflow-x-auto max-h-40">
-            <table class="w-full text-right text-[11px] text-gray-300">
-                <thead class="bg-gray-950 text-cyan-400">
-                    <tr>
-                        <th class="p-2">ID</th>
-                        <th class="p-2">اسم المستخدم</th>
-                        <th class="p-2">الرصيد الحالي</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for usr in all_users %}
-                    <tr class="border-b border-gray-800">
-                        <td class="p-2 font-bold text-amber-400">#{{ usr.id }}</td>
-                        <td class="p-2">{{ usr.username }}</td>
-                        <td class="p-2">${{ "%.2f"|format(usr.balance_usd) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
+        <div>
+            <h1 class="text-base font-black text-white mb-1">لوحة التحكم الإدارية</h1>
+            <p class="text-xs text-gray-400">إدارة الطلبات اليدوية، التوثيق، الوكلاء، والخدمات.</p>
         </div>
+        <a href="/admin/export_backup" class="bg-cyan-500 hover:bg-cyan-400 text-gray-950 px-4 py-2.5 rounded-2xl text-xs font-black transition shadow">
+            تصدير نسخة احتياطية (CSV)
+        </a>
     </div>
 
-   
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إدارة حسابات التجار</h2>
-        <form method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <input type="hidden" name="action" value="create_merchant">
-            <input type="text" name="username" placeholder="اسم المستخدم" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="password" name="password" placeholder="كلمة المرور" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="number" step="0.1" name="discount_percent" placeholder="نسبة الخصم %" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="number" step="0.01" name="gift_amount" placeholder="رصيد هدية افتتاحي ($)" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button type="submit" class="sm:col-span-4 bg-amber-500 text-gray-950 font-black py-2.5 rounded-xl text-xs">تفعيل حساب التاجر</button>
-        </form>
-    </div>
-
-
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">طلبات توثيق الحسابات</h2>
-        {% if pending_verifications %}
-        <div class="space-y-3">
-            {% for u in pending_verifications %}
-            <div class="flex items-center justify-between p-3 bg-gray-950 border border-gray-800 rounded-2xl">
-                <div>
-                    <p class="text-xs font-bold text-white">{{ u.full_name }} (@{{ u.username }})</p>
-                    <p class="text-[10px] text-gray-400">الإيميل: {{ u.email }} | الهاتف: {{ u.phone_syp }}</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="p-4 rounded-2xl text-xs font-bold {% if category == 'success' %} bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 {% else %} bg-rose-500/10 text-rose-400 border border-rose-500/30 {% endif %}">
+                    {{ message }}
                 </div>
-                <div class="flex gap-2">
-                    <form method="POST">
-                        <input type="hidden" name="action" value="approve_verification">
-                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                        <button type="submit" class="bg-emerald-500 text-gray-950 px-3 py-1.5 rounded-xl text-xs font-bold">موافقة</button>
-                    </form>
-                    <form method="POST">
-                        <input type="hidden" name="action" value="reject_verification">
-                        <input type="hidden" name="user_id" value="{{ u.id }}">
-                        <button type="submit" class="bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold">رفض</button>
-                    </form>
-                </div>
-            </div>
             {% endfor %}
-        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- الطلبات اليدوية الواردة للموقع (مع إمكانية جعلها مكتملة) -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">الطلبات اليدوية والواردة للموقع</h2>
+        {% if orders %}
+            <div class="space-y-3">
+                {% for ord in orders %}
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="space-y-1 text-xs text-gray-300">
+                        <p class="font-bold text-white">الخدمة: {{ ord.service_name }} (#{{ ord.id }})</p>
+                        <p>رابط الطلب: <a href="{{ ord.link }}" target="_blank" class="text-cyan-400 underline">{{ ord.link }}</a></p>
+                        <p>الكمية: {{ ord.quantity }} | التكلفة: ${{ "%.2f"|format(ord.total_price) }}</p>
+                        <p>الحالة: <span class="px-2 py-0.5 rounded-lg text-[10px] {% if ord.status == 'مكتمل' %} bg-emerald-500/20 text-emerald-400 {% else %} bg-amber-500/20 text-amber-400 {% endif %}">{{ ord.status }}</span></p>
+                    </div>
+                    {% if ord.status != 'مكتمل' %}
+                    <form action="/admin/complete_order/{{ ord.id }}" method="POST">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2 rounded-xl text-xs">تعيين مكتمل</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
         {% else %}
-        <p class="text-xs text-gray-400">لا توجد طلبات توثيق معلقة.</p>
+            <p class="text-xs text-gray-500 text-center py-3">لا توجد طلبات واردة حالياً.</p>
         {% endif %}
     </div>
 
-    
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إضافة طريقة دفع / باركود تحويل للزبائن</h2>
-        <form method="POST" class="space-y-3">
-            <input type="hidden" name="action" value="add_payment_method">
-            <input type="text" name="title" placeholder="اسم طريقة الدفع..." required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="qr_image_url" placeholder="رابط صورة الباركود..." required class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <textarea name="instructions" placeholder="تعليمات التحويل..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white"></textarea>
-            <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-black py-2.5 rounded-xl text-xs">حفظ وإضافة الباركود</button>
-           <!-- حقل رقم الحساب للنسخ -->
-      <div class="mb-3">
-         <input type="text" name="account_number" placeholder="رقم الحساب أو الكود للنسخ (اختياري مثل شام كاش)..." class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-cyan-500">
-      </div>
+    <!-- طلبات توثيق الحسابات المعلقة -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">طلبات توثيق الحسابات المعلقة</h2>
+        {% if verification_requests %}
+            <div class="space-y-4">
+                {% for v_req in verification_requests %}
+                <div class="bg-gray-950 border border-gray-800 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-cyan-400 font-bold">مستخدم ID: #{{ v_req.user_id }}</span>
+                        <span class="text-gray-400">الاسم: {{ v_req.full_name }}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300 space-y-1">
+                        <p>البريد: {{ v_req.email }}</p>
+                        <p>الهاتف: {{ v_req.phone }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 pt-2 border-t border-gray-800">
+                        <form action="/admin/handle_verification/{{ v_req.id }}" method="POST" class="flex-1">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-black py-2 rounded-xl text-xs">موافقة وتوثيق</button>
+                        </form>
+                        <form action="/admin/handle_verification/{{ v_req.id }}" method="POST" class="flex-1 flex gap-2">
+                            <input type="hidden" name="action" value="reject">
+                            <input type="text" name="reject_reason" placeholder="سبب الرفض..." required class="bg-gray-900 border border-gray-800 rounded-xl px-2 py-1.5 text-xs text-white flex-1 outline-none">
+                            <button type="submit" class="bg-rose-600 text-white font-black px-4 py-2 rounded-xl text-xs">رفض</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-xs text-gray-500 text-center py-3">لا توجد طلبات توثيق معلقة.</p>
+        {% endif %}
+    </div>
+
+    <!-- إرسال رصيد أو مكافأة عبر (ID المستخدم) -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">إرسال رصيد أو مكافأة عبر (ID المستخدم)</h2>
+        <form action="/admin/send_balance" method="POST" class="space-y-3">
+            <input type="number" name="user_id" placeholder="ID المستخدم..." required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="number" step="0.01" name="amount" placeholder="المبلغ ($)..." required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black py-3 rounded-2xl text-xs transition">إرسال الرصيد</button>
         </form>
     </div>
 
+    <!-- إدارة حسابات التجار -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">إدارة حسابات التجار</h2>
+        <form action="/admin/add_merchant" method="POST" class="space-y-3">
+            <input type="text" name="username" placeholder="اسم المستخدم" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="password" name="password" placeholder="كلمة المرور" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="number" step="0.01" name="bonus" placeholder="رصيد هدية افتتاحي ($)" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <button type="submit" class="w-full bg-amber-500 text-gray-950 font-black py-3 rounded-2xl text-xs">تفعيل حساب التاجر</button>
+        </form>
+    </div>
 
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">حذف قسم أو خدمة</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <form method="POST" class="bg-gray-950 p-4 rounded-2xl border border-gray-800 space-y-3">
-                <input type="hidden" name="action" value="delete_category">
-                <label class="block text-xs text-gray-400">حذف قسم كاملاً</label>
-                <select name="category_name" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+    <!-- إضافة طريقة دفع / باركود تحويل للزبائن مع رقم قابل للنسخ -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">إضافة طريقة دفع / باركود ورقم قابل للنسخ</h2>
+        <form action="/admin/add_payment" method="POST" class="space-y-3">
+            <input type="text" name="name" placeholder="اسم طريقة الدفع..." required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="qr_code_url" placeholder="رابط صورة الباركود..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="account_number" placeholder="رقم الحساب أو الكود للنسخ (مثل شام كاش)..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <textarea name="instructions" placeholder="تعليمات التحويل..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
+            <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">حفظ وإضافة طريقة الدفع</button>
+        </form>
+    </div>
+
+    <!-- إدارة الوكلاء المعتمدين مع رقم واتساب ورابط محادثة مباشرة -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">إدارة الوكلاء المعتمدين (مع زر واتساب)</h2>
+        <form action="/admin/add_agent" method="POST" class="space-y-3">
+            <input type="text" name="name" placeholder="اسم الوكيل / المحل" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="city" placeholder="المدينة" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="phone" placeholder="رقم الهاتف / الواتساب (مثال: 9639...)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <textarea name="address" placeholder="تفاصيل العنوان" rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
+            <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">إضافة وكيل معتمد</button>
+        </form>
+    </div>
+
+    <!-- حذف قسم أو خدمة -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">حذف قسم أو خدمة</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form action="/admin/delete_category" method="POST" class="space-y-3 bg-gray-950 p-4 rounded-2xl border border-gray-800">
+                <h3 class="text-xs font-bold text-rose-400">حذف قسم كاملاً</h3>
+                <select name="category_id" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
                     <option value="">-- اختر القسم --</option>
                     {% for cat in categories %}
-                    <option value="{{ cat }}">{{ cat }}</option>
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs">حذف القسم نهائياً</button>
+                <button type="submit" class="w-full bg-rose-600 text-white font-bold py-2 rounded-xl text-xs">حذف القسم</button>
             </form>
-
-            <form method="POST" class="bg-gray-950 p-4 rounded-2xl border border-gray-800 space-y-3">
-                <input type="hidden" name="action" value="delete_service">
-                <label class="block text-xs text-gray-400">حذف خدمة محددة</label>
-                <select name="service_id" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
+            <form action="/admin/delete_service" method="POST" class="space-y-3 bg-gray-950 p-4 rounded-2xl border border-gray-800">
+                <h3 class="text-xs font-bold text-rose-400">حذف خدمة محددة</h3>
+                <select name="service_id" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
                     <option value="">-- اختر الخدمة --</option>
                     {% for s in services %}
-                    <option value="{{ s.id }}">{{ s.name }} ({{ s.category }})</option>
+                    <option value="{{ s.id }}">{{ s.name }}</option>
                     {% endfor %}
                 </select>
-                <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs">حذف الخدمة</button>
+                <button type="submit" class="w-full bg-rose-600 text-white font-bold py-2 rounded-xl text-xs">حذف الخدمة</button>
             </form>
         </div>
     </div>
 
-    
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إدارة الوكلاء المعتمدين</h2>
-        <form method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-            <input type="hidden" name="action" value="add_agent">
-            <input type="text" name="name" placeholder="اسم الوكيل / المحل" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="city" placeholder="المدينة" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="phone" placeholder="رقم الهاتف" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="details" placeholder="تفاصيل العنوان" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <button type="submit" class="sm:col-span-2 bg-cyan-500 text-gray-950 font-bold py-2 rounded-xl text-xs">إضافة وكيل معتمد</button>
-        </form>
-
-        <div class="space-y-2">
-            {% for ag in agents %}
-            <div class="flex items-center justify-between p-3 bg-gray-950 border border-gray-800 rounded-xl text-xs">
-                <div>
-                    <span class="font-bold text-white">{{ ag.name }}</span> ({{ ag.city }}) - <span class="text-cyan-400">{{ ag.phone }}</span>
-                </div>
-                <form method="POST">
-                    <input type="hidden" name="action" value="delete_agent">
-                    <input type="hidden" name="agent_id" value="{{ ag.id }}">
-                    <button type="submit" class="text-rose-400 font-bold">حذف</button>
-                </form>
+    <!-- إضافة خدمة مع صورة ورابط المزود SMM -->
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 shadow-xl space-y-4">
+        <h2 class="text-sm font-black text-white">إضافة وتعديل الخدمات وربط SMM</h2>
+        <form action="/admin/add_service" method="POST" class="space-y-3">
+            <input type="text" name="name" placeholder="اسم الخدمة أو المنتج" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="category_name" placeholder="القسم الرئيسي" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="number" step="0.01" name="price" placeholder="السعر ($)" required class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            
+            <div class="space-y-1">
+                <label class="block text-[11px] font-bold text-gray-300">نوع الخدمة</label>
+                <select name="service_type" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+                    <option value="manual">يدوي / شحن ألعاب (يظهر للادمن كطلب يدوي)</option>
+                    <option value="smm">تلقائي SMM (ربط API)</option>
+                </select>
             </div>
-            {% endfor %}
-        </div>
-    </div>
 
-
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">طلبات شحن المحفظة المعلقة</h2>
-        {% if deposits %}
-        <div class="space-y-3">
-            {% for dep in deposits %}
-            <div class="flex items-center justify-between p-3 bg-gray-950 border border-gray-800 rounded-2xl text-xs">
-                <div>
-                    <span class="text-white font-bold">المستخدم: {{ dep.username }}</span> | المبلغ: <span class="text-amber-400">${{ dep.amount_usd }}</span> | التحويل: {{ dep.transaction_id }}
-                </div>
-                {% if dep.status == 'pending' %}
-                <form method="POST">
-                    <input type="hidden" name="action" value="approve_deposit">
-                    <input type="hidden" name="deposit_id" value="{{ dep.id }}">
-                    <button type="submit" class="bg-emerald-500 text-gray-950 px-3 py-1.5 rounded-xl font-bold">موافقة والشحن</button>
-                </form>
-                {% endif %}
+            <input type="text" name="image_url" placeholder="رابط صورة المنتج أو الخدمة..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            <input type="text" name="category_image_url" placeholder="رابط صورة القسم الرئيسي..." class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none">
+            
+            <div class="p-3 bg-gray-950 border border-gray-800 rounded-2xl space-y-2">
+                <p class="text-[11px] font-bold text-cyan-400">بيانات ربط SMM API (اختياري للخدمات التلقائية):</p>
+                <input type="text" name="api_url" placeholder="رابط API المزود" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                <input type="text" name="api_key" placeholder="مفتاح API المزود (Key)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                <input type="text" name="provider_service_id" placeholder="رقم الخدمة لديهم (Service ID)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white outline-none">
             </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <p class="text-xs text-gray-400">لا توجد طلبات شحن معلقة.</p>
-        {% endif %}
-    </div>
 
-   
-    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-6">
-        <h2 class="text-base font-black text-white mb-4">إضافة وتعديل الخدمات</h2>
-        <form method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-            <input type="hidden" name="action" value="add_service">
-            <input type="text" name="name" placeholder="اسم الخدمة" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="category" placeholder="القسم الرئيسي" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="number" step="0.01" name="price_usd" placeholder="السعر ($)" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            
-            <input type="text" name="delivery_time" placeholder="وقت التسليم (فوري / 10 دقائق)" value="فوري" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            
-            <input type="text" name="input_label" placeholder="المطلوب من الزبون (رابط، ID، هاتف...)" value="معرّف الحساب (ID)" required class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            
-            <select name="service_type" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-                <option value="game">لعبة / شحن يدوي (ID)</option>
-                <option value="api">SMM API تلقائي</option>
-            </select>
-            
-            <input type="text" name="provider_api_url" placeholder="رابط API المزود" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="provider_api_key" placeholder="مفتاح API المزود (Key)" class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="provider_service_id" placeholder="رقم الخدمة لديهم (Service ID)..." class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            
-            <input type="text" name="category_image_url" placeholder="رابط صورة القسم الرئيسي..." class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            <input type="text" name="service_image_url" placeholder="رابط صورة الخدمة التفصيلية..." class="bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white">
-            
-            <button type="submit" class="sm:col-span-3 bg-cyan-500 text-gray-950 font-black py-2.5 rounded-xl text-xs">حفظ وإضافة الخدمة للموقع</button>
+            <textarea name="description" placeholder="تفاصيل الخدمة..." rows="2" class="w-full bg-gray-950 border border-gray-800 rounded-2xl px-4 py-3 text-xs text-white outline-none"></textarea>
+            <button type="submit" class="w-full bg-cyan-500 text-gray-950 font-black py-3 rounded-2xl text-xs">حفظ وإضافة الخدمة</button>
         </form>
     </div>
+
 </div>
 {% endblock %}
