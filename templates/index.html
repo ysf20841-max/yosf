@@ -15,17 +15,17 @@
         <h1 class="text-xs font-black text-white">مرحباً بك في منصة أوج ميديا الرقمية</h1>
     </div>
 
-    <!-- أقسام الخدمات (مربعات برزوايا راقية - 3 جنب بعض) -->
+    <!-- أقسام الخدمات (أكبر حجماً - 3 جنب بعض) -->
     <div class="space-y-3">
         <h2 class="text-xs font-black text-white px-1">أقسام الخدمات المتاحة</h2>
         {% if categories %}
             <div class="grid grid-cols-3 gap-3">
                 {% for cat_id, info in categories.items() %}
-                <a href="{{ url_for('category_services', cat_id=cat_id) }}" class="bg-gray-900 hover:bg-gray-850 border border-gray-800 hover:border-cyan-500/50 rounded-3xl p-3 transition shadow-xl flex flex-col items-center text-center group">
-                    {% if info.image_url %}
-                    <img src="{{ info.image_url }}" alt="{{ info.name }}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-gray-800 mb-2 shadow">
+                <a href="{{ url_for('category_services', cat_id=cat_id) }}" class="bg-gray-900 hover:bg-gray-850 border border-gray-800 hover:border-cyan-500/50 rounded-3xl p-4 transition shadow-xl flex flex-col items-center text-center group">
+                    {% if info.image_url and info.image_url.strip() != "" %}
+                    <img src="{{ info.image_url }}" alt="{{ info.name }}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-gray-800 mb-3 shadow" onerror="this.onerror=null; this.src='https://via.placeholder.com/300';">
                     {% else %}
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 font-black text-sm mb-2 shadow">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center text-cyan-400 font-black text-sm mb-3 shadow">
                         {{ info.name[:2] }}
                     </div>
                     {% endif %}
